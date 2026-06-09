@@ -1,0 +1,3607 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KunoFinances - Control de Gastos & Poder Adquisitivo</title>
+	<link rel="icon" type="image/png" sizes="192x192" href="img/favicon.png">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/img/favicon.png">
+    <link rel="apple-touch-icon" href="/img/favicon.png">
+    <meta name="theme-color" content="#10b981">
+    <!-- Tailwind CSS para el diseño premium responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font para máxima legibilidad -->
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome para iconos atractivos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js para visualizaciones y gráficos avanzados -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+        }
+		
+		.font-comforta {
+            font-family: 'Comfortaa', sans-serif;
+            font-optical-sizing: auto;
+  			font-weight: 700;
+ 			font-style: normal;
+			color:white;
+			-webkit-text-stroke: 0px transparent;
+        }
+		.font-comfortaa {
+            font-family: 'Comfortaa', sans-serif;
+            font-optical-sizing: auto;
+  			font-weight: 700;
+ 			font-style: normal;
+			-webkit-text-stroke: 1px;
+        }
+        /* Personalización de barra de desplazamiento */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col pb-24 md:pb-12">
+
+    <!-- PANTALLA DE CARGA GLOBAL -->
+    <div id="loading-screen" class="fixed inset-0 bg-[#0b0f19] z-[100] flex flex-col items-center justify-center space-y-4">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+        <p class="text-xs text-slate-400 font-medium font-comfortaa">Conectando con kunofinances...</p>
+    </div>
+
+    <!-- ========================================== -->
+    <!--  PANTALLA DE ACCESO (LOGIN, REGISTER, RESET) -->
+    <!-- ========================================== -->
+    <div id="auth-screen" class="fixed inset-0 bg-[#0b0f19] z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl relative">
+            
+            <!-- Logo principal de autenticación -->
+            <div class="flex flex-col items-center mb-8 text-center">
+                <div class="mb-3">
+    <img src="img/kunofinances.png"
+         alt="KunoFinances"
+         class="h-20 mx-auto object-contain">
+</div>
+                <h1 class="font-comfortaa text-2xl text-[#06b57b]">
+                    kuno<span class="font-comforta">finances</span>
+                </h1>
+                <p class="text-xs text-slate-400 mt-1">Tu billetera inteligente con control inflacionario en la nube</p>
+            </div>
+
+            <!-- VISTA 1: INICIAR SESIÓN -->
+            <div id="view-login" class="space-y-5">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-200">Iniciar Sesión</h2>
+                    <p class="text-xs text-slate-400">Ingresa tus credenciales para sincronizar tus finanzas.</p>
+                </div>
+                
+                <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1.5">Correo Electrónico</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500"><i class="fa-solid fa-envelope"></i></span>
+                            <input type="email" id="login-email" required placeholder="correo@ejemplo.com" class="w-full pl-9 pr-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 text-slate-100">
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label class="block text-xs font-semibold text-slate-400">Contraseña</label>
+                            <button type="button" onclick="switchAuthView('reset')" class="text-xs text-emerald-400 hover:underline">¿Olvidaste tu contraseña?</button>
+                        </div>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500"><i class="fa-solid fa-lock"></i></span>
+                            <input type="password" id="login-password" required placeholder="••••••••" class="w-full pl-9 pr-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 text-slate-100">
+                        </div>
+                    </div>
+
+                    <!-- Recordatorio / Recordarme -->
+                    <div class="flex items-center">
+                        <input type="checkbox" id="login-remember" class="w-4 h-4 bg-slate-800 border-slate-700 rounded text-emerald-500 focus:ring-emerald-500 focus:ring-opacity-25 focus:ring-offset-0">
+                        <label for="login-remember" class="ml-2 text-xs text-slate-400 cursor-pointer select-none">Recordar mi usuario</label>
+                    </div>
+
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs transition duration-200 shadow-lg shadow-emerald-600/10">
+                        Entrar a mi Cuenta
+                    </button>
+                </form>
+
+                <div class="text-center pt-2">
+                    <p class="text-xs text-slate-400">¿No tienes una cuenta? <button onclick="switchAuthView('register')" class="text-emerald-400 font-bold hover:underline">Regístrate gratis</button></p>
+                </div>
+            </div>
+
+            <!-- VISTA 2: REGISTRO DE USUARIO -->
+            <div id="view-register" class="space-y-5 hidden">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-200">Crear Nueva Cuenta</h2>
+                    <p class="text-xs text-slate-400">Regístrate para comenzar a trackear y simular tus ahorros.</p>
+                </div>
+                
+                <form id="register-form" onsubmit="handleRegister(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1.5">Nombre Completo</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500"><i class="fa-solid fa-user"></i></span>
+                            <input type="text" id="register-name" required placeholder="Juan Pérez" class="w-full pl-9 pr-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 text-slate-100">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1.5">Correo Electrónico</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500"><i class="fa-solid fa-envelope"></i></span>
+                            <input type="email" id="register-email" required placeholder="correo@ejemplo.com" class="w-full pl-9 pr-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 text-slate-100">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1.5">Contraseña</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500"><i class="fa-solid fa-lock"></i></span>
+                            <input type="password" id="register-password" required placeholder="Mínimo 6 caracteres" class="w-full pl-9 pr-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 text-slate-100">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs transition duration-200">
+                        Comenzar Ahora
+                    </button>
+                </form>
+
+                <div class="text-center pt-2">
+                    <p class="text-xs text-slate-400">¿Ya tienes cuenta? <button onclick="switchAuthView('login')" class="text-emerald-400 font-bold hover:underline">Inicia Sesión</button></p>
+                </div>
+            </div>
+
+            <!-- VISTA 3: RESTABLECER CONTRASEÑA -->
+            <div id="view-reset" class="space-y-5 hidden">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-200">Restablecer Contraseña</h2>
+                    <p class="text-xs text-slate-400">Te enviaremos un correo para que puedas crear una nueva contraseña.</p>
+                </div>
+                
+                <form id="reset-form" onsubmit="handleResetPassword(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1.5">Ingresa tu Correo Electrónico</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500"><i class="fa-solid fa-envelope"></i></span>
+                            <input type="email" id="reset-email" required placeholder="correo@ejemplo.com" class="w-full pl-9 pr-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 text-slate-100">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs transition duration-200">
+                        Enviar Enlace de Recuperación
+                    </button>
+                </form>
+
+                <div class="text-center pt-2">
+                    <button onclick="switchAuthView('login')" class="text-xs text-slate-400 hover:text-white transition flex items-center justify-center space-x-1.5 mx-auto">
+                        <i class="fa-solid fa-arrow-left"></i> <span>Volver al Login</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Info / Footer de Auth -->
+            <div class="mt-6 pt-4 border-t border-slate-800 text-center">
+                <span class="text-[10px] text-slate-500 font-medium">
+                    <i class="fa-solid fa-shield-halved mr-1"></i> Autenticación Real de Firebase en Tiempo Real
+                </span>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- HEADER & BARRA DE NAVEGACIÓN -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="hidden md:block p-1">
+    <img src="img/kunofinances.png"
+         alt="KunoFinances"
+         class="h-10 w-10 object-contain">
+</div>
+                <div>
+                    <h1 class="font-comfortaa text-xl text-[#06b57b]">
+                        kuno<span class="font-comforta">finances</span>
+                    </h1>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-3">
+                <div class="relative">
+
+    <button
+        id="user-menu-button"
+        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700 max-w-[200px] truncate hover:bg-slate-700 transition">
+        <span class="w-1.5 h-1.5 mr-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+
+        <span id="user-display-name" class="truncate">
+            Sincronizando...
+        </span>
+    </button>
+
+    <!-- MENU -->
+    <div
+        id="user-menu"
+        class="hidden absolute right-0 mt-2 w-52 rounded-xl border border-slate-700 bg-slate-900 shadow-2xl z-50 overflow-hidden"
+    >
+
+        <button
+            onclick="deleteAccount()"
+            class="w-full text-left px-4 py-3 text-sm text-rose-400 hover:bg-slate-800 transition"
+        >
+            <i class="fa-solid fa-trash mr-2"></i>
+            Eliminar cuenta
+        </button>
+
+    </div>
+
+</div>
+                
+                <!-- Botón de Cerrar Sesión -->
+                <button onclick="handleLogout()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 p-2.5 px-3 py-1.5 rounded-xl transition duration-200" title="Cerrar Sesión">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- NAVEGACIÓN MÓVIL POR SOLAPAS (Solo visible en dispositivos móviles) -->
+    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 z-50 shadow-2xl">
+        <div class="grid grid-cols-3 text-center text-[10px] font-medium py-1.5">
+            <button onclick="setActiveMobileTab('operaciones')" id="tab-nav-operaciones" class="py-1.5 flex flex-col items-center justify-center text-emerald-400 transition-all duration-150">
+                <i class="fa-solid fa-cash-register text-lg mb-1"></i>
+                <span>Operaciones</span>
+            </button>
+            <button onclick="setActiveMobileTab('estadisticas')" id="tab-nav-estadisticas" class="py-1.5 flex flex-col items-center justify-center text-slate-400 hover:text-slate-200 transition-all duration-150">
+                <i class="fa-solid fa-chart-pie text-lg mb-1"></i>
+                <span>Estadísticas</span>
+            </button>
+            <button onclick="setActiveMobileTab('simulador')" id="tab-nav-simulador" class="py-1.5 flex flex-col items-center justify-center text-slate-400 hover:text-slate-200 transition-all duration-150">
+                <i class="fa-solid fa-calculator text-lg mb-1"></i>
+                <span>Simulador</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- CONTAINER PRINCIPAL (En escritorio se ve todo junto; en móvil se muestra según la solapa activa) -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 flex-grow w-full space-y-8 mb-24 md:mb-12">
+        <div><h6 id="fecha" class="text-center text-[#64748b]"></h6></div>
+
+        <!-- ========================================== -->
+        <!--  SECCIÓN 1: OPERACIONES & HISTORIAL        -->
+        <!-- ========================================== -->
+        <div id="section-container-operaciones" class="space-y-6 block">
+            
+            <!-- ÍNDICES ECONÓMICOS -->
+            <div class="block md:hidden bg-slate-900/90 border border-slate-800 p-3 rounded-2xl">
+
+    <!-- FILA 1 -->
+    <div class="flex items-center justify-between gap-2 mb-2">
+
+        <div class="bg-slate-800/40 px-2.5 py-1.5 rounded-xl border border-slate-800 flex items-center space-x-2 flex-1 justify-center">
+            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                USD
+            </span>
+
+            <div class="flex items-center space-x-1.5 text-xs">
+                <span class="text-slate-300 font-semibold" id="usd-compra-mob">
+                    $0
+                </span>
+
+                <span class="text-slate-600 font-light">
+                    /
+                </span>
+
+                <span class="text-emerald-400 font-bold" id="usd-venta-mob">
+                    $0
+                </span>
+            </div>
+        </div>
+
+        <div class="bg-slate-800/40 px-3 py-1.5 rounded-xl border border-slate-800 flex items-center space-x-2 flex-1 justify-center">
+            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                IPC
+            </span>
+
+            <span class="text-xs font-black text-rose-400" id="inflacion-valor-mob">
+                0%
+            </span>
+        </div>
+
+    </div>
+
+    <!-- FILA 2 -->
+    <div class="bg-slate-800/40 border border-slate-800 px-3 py-2 rounded-xl">
+
+    <div class="flex items-center justify-between mb-2">
+
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+            Plazos Fijos
+        </span>
+
+        <button
+            type="button"
+            onclick="openBankModal()"
+            class="text-[10px] text-indigo-400">
+
+            Elegí 3 entidades
+
+        </button>
+
+    </div>
+
+    <div id="pf-rates-mobile"
+         class="flex flex-wrap justify-center gap-3 text-[10px]">
+    </div>
+
+</div>
+
+</div>
+
+            <section class="hidden md:block bg-slate-900/40 border border-slate-800/80 p-5 rounded-2xl">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <!-- Dólar -->
+                    <div class="bg-slate-900/60 border border-slate-800 p-4 sm:p-5 rounded-2xl flex flex-col justify-between relative overflow-hidden group">
+                        <div class="absolute -right-4 -bottom-4 text-slate-800/10 text-7xl font-bold select-none group-hover:scale-110 transition-transform duration-500">USD</div>
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider">Dólar Oficial (BNA)</span>
+                                <a href="https://www.bna.com.ar/Personas" target="_blank" class="text-[10px] sm:text-xs text-blue-400 hover:underline flex items-center space-x-1">
+                                    <span>Ver BNA</span> <i class="fa-solid fa-up-right-from-square text-[9px]"></i>
+                                </a>
+                            </div>
+                            <div class="mt-2.5 sm:mt-4 grid grid-cols-2 gap-3">
+                                <div class="bg-slate-800/40 p-2 sm:p-3 rounded-xl border border-slate-800/80">
+                                    <p class="text-[10px] sm:text-[11px] text-slate-400">Compra</p>
+                                    <p class="text-lg sm:text-xl font-bold text-slate-200" id="usd-compra">$0,00</p>
+                                </div>
+                                <div class="bg-slate-800/40 p-2 sm:p-3 rounded-xl border border-slate-800/80">
+                                    <p class="text-[10px] sm:text-[11px] text-slate-400">Venta</p>
+                                    <p class="text-lg sm:text-xl font-bold text-emerald-400" id="usd-venta">$0,00</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3 sm:mt-4 pt-2.5 border-t border-slate-800/60 flex items-center justify-between text-[10px] sm:text-[11px] text-slate-500">
+                            <span>Sincronización Automática</span>
+                            <span id="usd-fecha">Act: Cargando...</span>
+                        </div>
+                    </div>
+
+                    <!-- Inflación INDEC -->
+                    <div class="bg-slate-900/60 border border-slate-800 p-4 sm:p-5 rounded-2xl flex flex-col justify-between relative overflow-hidden group">
+                        <div class="absolute -right-4 -bottom-4 text-slate-800/10 text-7xl font-bold select-none group-hover:scale-110 transition-transform duration-500">IPC</div>
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider">Inflación Mensual INDEC</span>
+                                <a href="https://www.indec.gob.ar" target="_blank" class="text-[10px] sm:text-xs text-blue-400 hover:underline flex items-center space-x-1">
+                                    <span>Ver INDEC</span> <i class="fa-solid fa-up-right-from-square text-[9px]"></i>
+                                </a>
+                            </div>
+                            <div class="mt-2.5 sm:mt-4 flex items-center justify-between bg-slate-800/40 p-3 sm:p-3.5 rounded-xl border border-slate-800/80">
+                                <div>
+                                    <p class="text-[10px] sm:text-[11px] text-slate-400">Último IPC Registrado</p>
+                                    <p class="text-xl sm:text-2xl font-black text-rose-400" id="inflacion-valor">Cargando...</p>
+                                </div>
+                                <span class="text-[10px] bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2 py-0.5 sm:py-1 sm:px-2.5 rounded-lg font-medium">
+                                    Mensual
+                                </span>
+                            </div>
+                        </div>
+                        <div class="mt-3 sm:mt-4 pt-2.5 border-t border-slate-800/60 flex items-center justify-between text-[10px] sm:text-[11px] text-slate-500">
+                            <span>Índice de Precios al Consumidor</span>
+                            <span id="inflacion-fecha">Cargando...</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 border border-slate-800 p-4 sm:p-5 rounded-2xl flex flex-col justify-between">
+
+    <div>
+
+        <div class="flex items-center space-x-2">
+
+            <span class="bg-emerald-500/10 text-emerald-400 text-[9px] sm:text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded border border-emerald-500/20">
+                PLAZOS FIJOS
+            </span>
+
+            <span class="text-slate-400 text-[11px] sm:text-xs font-medium">
+                TNA Clientes
+            </span>
+
+            <button
+                type="button"
+                onclick="openBankModal()"
+                class="ml-auto text-[10px] text-indigo-400 hover:text-indigo-300 transition">
+
+                Elegí 3 entidades
+
+            </button>
+
+        </div>
+
+        <div id="selected-banks"
+             class="space-y-2 mt-4">
+        </div>
+
+    </div>
+
+</div>
+
+
+                </div>
+            </section>
+
+            <!-- REGISTRO Y TABLA -->
+            <section class="space-y-3">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- FORMULARIO MANUAL -->
+                    <div class="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-base font-bold text-slate-200">Añadir Movimiento</h3>
+                            <p class="text-xs text-slate-400">Completa los campos para un registro detallado en la nube</p>
+
+                            <form id="transaction-form" onsubmit="handleManualSubmit(event)" class="space-y-4 mt-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-400 mb-1.5">Tipo de Movimiento</label>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <button type="button" onclick="setFormType('gasto')" id="btn-form-gasto" class="py-2.5 px-4 rounded-xl text-xs font-bold transition border border-rose-500/30 bg-rose-500/10 text-rose-400">
+                                            <i class="fa-solid fa-arrow-down-short-wide mr-1"></i> Gasto / Egreso
+                                        </button>
+                                        <button type="button" onclick="setFormType('ingreso')" id="btn-form-ingreso" class="py-2.5 px-4 rounded-xl text-xs font-bold transition border border-slate-800 bg-slate-800 text-slate-400">
+                                            <i class="fa-solid fa-arrow-up-wide-short mr-1"></i> Ingreso / Crédito
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-3 gap-2">
+                                    <div class="col-span-1">
+                                        <label class="block text-xs font-semibold text-slate-400 mb-1.5">Moneda</label>
+                                        <select id="form-currency" required class="w-full px-2 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs font-semibold text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                                            <option value="ARS">ARS ($)</option>
+                                            <option value="USD">USD (u$s)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-span-2">
+                                        <label class="block text-xs font-semibold text-slate-400 mb-1.5">Monto</label>
+                                        <input type="text" id="form-amount" required placeholder="0.00" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs font-semibold text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-400 mb-1.5">Fecha</label>
+                                        <input type="date" id="form-date" required onfocus="const d = new Date(); const year = d.getFullYear(); const month = String(d.getMonth() + 1).padStart(2, '0'); const day = String(d.getDate()).padStart(2, '0');
+        								this.max = `${year}-${month}-${day}`;" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs font-semibold text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-400 mb-1.5">Categoría</label>
+                                    <select id="form-category" required class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs font-semibold text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                                        <option value="Comida">Comida</option>
+                                        <option value="Alquiler">Alquiler</option>
+                                        <option value="Servicios">Servicios</option>
+                                        <option value="Transporte">Transporte</option>
+                                        <option value="Educación">Educación</option>
+                                        <option value="Salario">Salario</option>
+                                        <option value="Regalo">Regalo</option>
+                                        <option value="Inversión">Inversión</option>
+                                        <option value="Otros">Otros</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-400 mb-1.5">Descripción</label>
+                                    <input type="text" id="form-description" required placeholder="Ej: Compra en supermercado" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs font-semibold text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                                </div>
+
+                                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs transition duration-200">
+                                    Guardar Registro
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- TABLA DEL HISTORIAL DE TRANSACCIONES -->
+                    <div class="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl lg:col-span-2 flex flex-col justify-between">
+                        <div>
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                <div>
+                                    <h3 class="text-base font-bold text-slate-200">Historial de Transacciones</h3>
+                                    <p class="text-xs text-slate-400 font-medium">Sincronización instantánea multidispositivo</p>
+                                </div>
+                                <div class="flex items-center space-x-2">
+    								<select id="filter-type" onchange="applyFilters()" class="px-2.5 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-xs font-semibold text-slate-300">
+										<option value="all">Todos los Movimientos</option>
+										<option value="gasto">Gastos</option>
+										<option value="ingreso">Ingresos</option>
+    								</select>
+
+    								<select id="filter-period" onchange="applyFilters()" class="px-2.5 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-xs font-semibold text-slate-300">
+        							</select>
+								</div>
+                            </div>
+
+                            <div class="mt-4 overflow-x-auto">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="border-b border-slate-800 text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
+                                            <th class="py-3 px-2">Fecha</th>
+                                            <th class="py-3 px-2">Detalle / Cat.</th>
+                                            <th class="py-3 px-2 text-right">Monto Original</th>
+                                            <th class="py-3 px-2 text-right">Equiv. Alternativo</th>
+                                            <th class="py-3 px-2 text-center">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="transaction-table-body" class="divide-y divide-slate-800/50 text-xs">
+                                        <tr>
+                                            <td colspan="5" class="py-6 text-center text-slate-500">Buscando transacciones en Firebase...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-500">
+                            <span id="transaction-count">Mostrando 0 transacciones</span>
+                            <button onclick="clearCloudHistory()" class="text-rose-400 hover:text-rose-300 transition font-medium text-xs">
+                                Limpiar Historial en la nube
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MÉTRICAS -->
+            <section class="space-y-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl flex items-center justify-between">
+                        <div>
+                            <span class="text-xs text-slate-400 font-medium">Ingresos Totales (ARS)</span>
+                            <h3 class="text-2xl font-bold mt-1 text-slate-100" id="metric-income">$0</h3>
+                        </div>
+                        <div class="bg-slate-500/10 p-3 rounded-xl border border-slate-500/20 text-slate-400 font-bold text-xs">
+                            $ ARS
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl flex items-center justify-between">
+                        <div>
+                            <span class="text-xs text-slate-400 font-medium">Gastos Totales (ARS)</span>
+                            <h3 class="text-2xl font-bold mt-1 text-rose-400" id="metric-expenses">$0</h3>
+                        </div>
+                        <div class="bg-rose-500/10 p-3 rounded-xl border border-rose-500/20 text-rose-400 font-bold text-xs">
+                            $ ARS
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl flex items-center justify-between">
+                        <div>
+                            <span class="text-xs text-slate-400 font-medium">Saldo Neto (ARS)</span>
+                            <h3 class="text-2xl font-bold mt-1 text-emerald-400" id="metric-balance">$0</h3>
+                        </div>
+                        <div class="bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20 text-emerald-400 font-bold text-xs">
+                            $ ARS
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl flex items-center justify-between">
+                        <div>
+                            <span class="text-xs text-slate-400 font-medium">Ingresos Totales (USD)</span>
+                            <h3 class="text-2xl font-bold mt-1 text-slate-100" id="metric-income-usd">u$s 0</h3>
+                        </div>
+                        <div class="bg-slate-500/10 p-3 rounded-xl border border-emerald-500/20 text-slate-400 font-bold text-xs">
+                            u$s USD
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl flex items-center justify-between">
+                        <div>
+                            <span class="text-xs text-slate-400 font-medium">Gastos Totales (USD)</span>
+                            <h3 class="text-2xl font-bold mt-1 text-rose-400" id="metric-expenses-usd">u$s 0</h3>
+                        </div>
+                        <div class="bg-rose-500/10 p-3 rounded-xl border border-rose-500/20 text-rose-400 font-bold text-xs">
+                            u$s USD
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl flex items-center justify-between">
+                        <div>
+                            <span class="text-xs text-slate-400 font-medium">Saldo Neto (USD)</span>
+                            <h3 class="text-2xl font-bold mt-1 text-emerald-400" id="metric-balance-usd">u$s 0</h3>
+                        </div>
+                        <div class="bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20 text-emerald-400 font-bold text-xs">
+                            u$s USD
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl flex items-center justify-between sm:col-span-2 lg:col-span-2">
+                        <div>
+                            <span class="text-xs text-slate-400 font-medium">Equivalente de Reserva (Total de Todo en USD)</span>
+                            <h3 class="text-3xl font-black mt-1 text-amber-400" id="metric-usd-power">u$s 0</h3>
+                        </div>
+                        <div class="bg-amber-500/10 p-3 rounded-xl border border-amber-500/20 text-amber-400 font-bold text-xs">
+                            <i class="fa-solid fa-sack-dollar text-2xl animate-pulse"></i>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ========================================== -->
+        <!--  SECCIÓN 2: ESTADÍSTICAS                    -->
+        <!-- ========================================== -->
+        <div id="section-container-estadisticas" class="space-y-6 hidden">
+            <section class="space-y-3">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl lg:col-span-8 space-y-6 flex flex-col justify-between">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div>
+                                <h3 class="text-base font-bold text-slate-200">Comparación de Ahorro e Historial</h3>
+                                <p class="text-xs text-slate-400 font-medium">Comportamiento mensual para saber si ahorraste dinero</p>
+                            </div>
+                            <select id="chart-currency-view" onchange="changeChartCurrencyView(this.value)" class="px-2.5 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-xs font-semibold text-slate-300">
+                                <option value="total_usd">Total Unificado (u$s USD)</option>
+                                <option value="ars">Pesos ($ ARS)</option>
+                                <option value="usd">Dólares (u$s USD)</option>
+                            </select>
+							<div class="flex items-center space-x-1">
+                                    <button onclick="toggleChartType('monthly')" id="tab-monthly" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600/20 text-emerald-400 border border-emerald-500/30">
+                                        Mensual
+                                    </button>
+                                    <button onclick="toggleChartType('yearly')" id="tab-yearly" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-750">
+                                        Anual (<span id="lista-anios"></span>)
+                                    </button>
+                                </div>
+                        </div>
+						<!-- Gráfico de Tendencias -->
+                        <div class="w-full h-[320px] md:h-[350px] relative">
+                            <canvas id="comparison-chart"></canvas>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-2 text-center pt-2 border-t border-slate-800">
+                            <div>
+                                <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Tasa Ahorro Promedio</p>
+                                <p class="text-base font-bold text-emerald-400" id="stats-savings-rate">0%</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Mes de Mayor Ahorro</p>
+                                <p class="text-base font-bold text-slate-200" id="stats-best-month">Ninguno</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Resultado vs Inflación</p>
+                                <span class="inline-block mt-0.5 px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-500/15 text-emerald-400" id="inflation-beaten-badge">
+                                    Calculando...
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl lg:col-span-4 flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-base font-bold text-slate-200">¿Dónde se va el dinero?</h3>
+                            <p class="text-xs text-slate-400" id="category-chart-sub">Gastos unificados por categoría</p>
+                        </div>
+                        <div class="w-full h-[220px] my-4 flex items-center justify-center relative">
+                            <canvas id="category-chart"></canvas>
+                        </div>
+                        <div class="space-y-2 max-h-[160px] overflow-y-auto pr-1" id="category-list-legend"></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ========================================== -->
+        <!--  SECCIÓN 3: SIMULADOR                      -->
+        <!-- ========================================== -->
+        <div id="section-container-simulador" class="space-y-6 hidden">
+            <section class="space-y-3">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center space-x-2 text-emerald-400">
+                                <i class="fa-solid fa-chart-line"></i>
+                                <h3 class="text-sm font-bold uppercase tracking-wider">Calculadora de Sueldo Real</h3>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-1">
+                                Compara tu sueldo nominal actual frente al poder adquisitivo inicial ajustado por el dólar oficial e inflación.
+                            </p>
+
+                            <div class="space-y-4 mt-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-400 mb-1.5">Sueldo Mensual Inicial</label>
+                                    <input type="number" id="base-salary" value="605780" oninput="calculateRealPurchasingPower()" class="block w-full px-3 py-2.5 bg-slate-800/80 border border-slate-700 rounded-xl focus:ring-1 focus:ring-emerald-500 text-sm font-semibold text-slate-100">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-400 mb-1.5">Sueldo Mensual Actual</label>
+                                    <input type="number" id="current-salary" value="1200000" oninput="calculateRealPurchasingPower()" class="block w-full px-3 py-2.5 bg-slate-800/80 border border-slate-700 rounded-xl focus:ring-1 focus:ring-emerald-500 text-sm font-semibold text-slate-100">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-3 border-t border-slate-800/60 text-slate-400 text-xs space-y-1.5">
+                            <div class="flex justify-between">
+                                <span>Pérdida por Inflación:</span>
+                                <span class="text-rose-400 font-semibold" id="loss-inflation-percentage">0%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Poder Real Comparativo:</span>
+                                <span class="text-emerald-400 font-semibold" id="real-purchasing-index">u$s 0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl lg:col-span-2 flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-base font-bold text-slate-200">Análisis Real del Salario</h3>
+                            <p class="text-xs text-slate-400">Evolución de compra descontando el salto cambiario e IPC INDEC</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+                            <div class="bg-slate-800/40 border border-slate-800 p-4 rounded-xl flex items-start space-x-3">
+                                <div class="bg-amber-500/10 p-2.5 rounded-lg text-amber-400">
+                                    <i class="fa-solid fa-dollar-sign text-lg"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-semibold text-slate-400">Sueldo Nominal en Dólar Oficial</h4>
+                                    <p class="text-lg font-black text-slate-100 mt-1" id="salary-in-usd">u$s 0</p>
+                                    <p class="text-xs text-slate-500 mt-0.5" id="salary-in-usd-comparison"></p>
+                                </div>
+                            </div>
+
+                            <div id="salary-adjusted-card" class="bg-slate-800/40 border border-slate-800 p-4 rounded-xl flex items-start space-x-3">
+                                <div id="salary-adjusted-icon-container" class="p-2.5 rounded-lg border flex-shrink-0 text-slate-400">
+                                    <i id="salary-adjusted-icon" class="fa-solid fa-arrow-trend-down text-lg"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-semibold text-slate-400">Poder de Compra Real</h4>
+                                    <p class="text-lg font-black mt-1" id="salary-adjusted-inflation">$0</p>
+                                    <p class="text-xs mt-0.5" id="salary-adjusted-comparison"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-950/40 p-4 rounded-xl border border-slate-800/60">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center space-x-2 text-indigo-400 text-xs font-bold uppercase tracking-wider">
+                                    <i class="fa-solid fa-wand-magic-sparkles animate-pulse"></i>
+                                    <span>Diagnóstico de IA en vivo</span>
+                                </div>
+                                <button onclick="generateAIDiagnosis()" class="text-[10px] text-slate-400 hover:text-indigo-300 underline transition">
+                                    Redactar de nuevo
+                                </button>
+                            </div>
+                            <p class="text-xs text-slate-300 leading-relaxed italic" id="salary-ai-diagnosis">
+                                Calculando diagnóstico...
+                            </p>
+                        </div>
+                    </div>
+                </div>
+			
+            </section>
+        </div>	
+		<div id="bank-modal"
+     class="fixed inset-0 bg-black/60 hidden z-[9999] flex items-center justify-center">
+
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl p-4 w-[95%] max-w-md max-h-[80vh] overflow-y-auto">
+
+        <h3 class="text-white text-sm font-semibold mb-3">
+            Elegir entidades (máx. 3)
+        </h3>
+
+        <div id="bank-list"
+             class="max-h-80 overflow-y-auto space-y-2">
+        </div>
+
+        <div class="flex justify-end gap-2 mt-4">
+
+            <button
+                onclick="closeBankModal()"
+                class="px-3 py-2 text-xs text-slate-300">
+                Cancelar
+            </button>
+
+            <button
+                onclick="saveBankSelection()"
+                class="px-3 py-2 text-xs bg-emerald-600 rounded-lg text-white">
+                Guardar
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+    </main>
+
+    <!-- TOASTS DE NOTIFICACIÓN -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 max-w-sm pointer-events-none"></div>
+
+    <!-- IMPORTS DE FIREBASE SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import {
+    getAuth,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    signOut,
+    sendPasswordResetEmail,
+    onAuthStateChanged,
+    signInAnonymously,
+    setPersistence,
+    browserLocalPersistence,
+    updateProfile
+} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import {
+    getFirestore,
+    collection,
+    doc,
+    addDoc,
+    deleteDoc,
+    getDocs,
+    onSnapshot,
+    serverTimestamp,
+    query,
+    orderBy
+} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        window.FirebaseLib = {
+    initializeApp,
+    getAuth,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    signOut,
+    sendPasswordResetEmail,
+    onAuthStateChanged,
+    signInAnonymously,
+    setPersistence,
+    browserLocalPersistence,
+    updateProfile,
+    getFirestore,
+    collection,
+    doc,
+    addDoc,
+    deleteDoc,
+    getDocs,
+       onSnapshot,
+    serverTimestamp,
+    query,
+    orderBy
+};
+        
+        if (typeof window.startAppAfterLoad === 'function') {
+    window.startAppAfterLoad();
+}
+    </script>
+
+    <!-- LOGICA OPERATIVA SINO-SOPORTADO -->
+    <script>
+        // ==========================================
+        //  CONFIGURACIÓN DE CREDENCIALES
+        // ==========================================
+        const GEMINI_API_KEY = "AIzaSyDkC8jEyOc9CuNUFioWEZWCpLeMw5AceHs"; 
+
+        const LOCAL_FIREBASE_CONFIG = {
+            apiKey: "AIzaSyDLlmsBwkbjqvc6tplVSZbxeFZ2x1UPtRU",
+            authDomain: "kunofinances.firebaseapp.com",
+            projectId: "kunofinances",
+            storageBucket: "kunofinances.firebasestorage.app",
+            messagingSenderId: "690699051750",
+            appId: "1:690699051750:web:d2e148b1590117e6181127"
+        };
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'kunofinances-prod-app';
+        let db, auth;
+        let currentUser = null;
+        let unsubscribeRealtime = null;
+
+        // Estado Reactivo Unificado de la App
+        const state = {
+            usdIndices: { compra: 1370.00, venta: 1420.00, fecha: 'Cargando...' },
+            inflacionIndec: { mensual: 2.6, fecha: 'Cargando...' },
+            transacciones: [],
+            tipoFormulario: 'gasto',
+            chartCurrencyView: 'total_usd',
+            graficoTipo: 'monthly',
+            comparacionChart: null,
+            categoriaChart: null,
+            reconocimientoVoz: null,
+            grabando: false,
+            transaccionTemporalIA: null,
+            currentMobileTab: 'operaciones'
+        };
+
+        const categoryColors = {
+            'Comida': '#f43f5e',
+            'Alquiler': '#3b82f6',
+            'Servicios': '#8b5cf6',
+            'Transporte': '#06b6d4',
+            'Educación': '#eab308',
+            'Otros': '#64748b',
+            'Salario': '#10b981',
+            'Regalo': '#ec4899',
+            'Inversión': '#f97316'
+        };
+
+        // Mostrar Notificación Toast
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            let bgClass = 'bg-slate-900 border-slate-800 text-slate-300';
+            let icon = '<i class="fa-solid fa-circle-info text-blue-400"></i>';
+            
+            if (type === 'success') {
+                bgClass = 'bg-slate-900 border-emerald-500/30 text-slate-200';
+                icon = '<i class="fa-solid fa-circle-check text-emerald-400 animate-bounce"></i>';
+            } else if (type === 'error') {
+                bgClass = 'bg-slate-900 border-rose-500/30 text-slate-200';
+                icon = '<i class="fa-solid fa-triangle-exclamation text-rose-400"></i>';
+            } else if (type === 'loading') {
+                bgClass = 'bg-slate-900 border-indigo-500/30 text-slate-200';
+                icon = '<i class="fa-solid fa-spinner animate-spin text-indigo-400"></i>';
+            }
+
+            toast.className = `flex items-center space-x-3 p-4 rounded-xl border ${bgClass} shadow-xl transform translate-y-2 transition duration-300 ease-out pointer-events-auto`;
+            toast.innerHTML = `<div class="flex-shrink-0">${icon}</div><div class="text-xs font-semibold">${message}</div>`;
+            
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 4500);
+
+            return toast;
+        }
+
+        // Inicializar Firebase y Autenticar (REGLA 3)
+        window.startAppAfterLoad = async function () {
+    try {
+        const app = window.FirebaseLib.initializeApp(LOCAL_FIREBASE_CONFIG);
+
+        auth = window.FirebaseLib.getAuth(app);
+        db = window.FirebaseLib.getFirestore(app);
+
+        await window.FirebaseLib.setPersistence(
+            auth,
+            window.FirebaseLib.browserLocalPersistence
+        );
+
+        window.FirebaseLib.onAuthStateChanged(auth, async (user) => {
+            const loadingScreen = document.getElementById('loading-screen');
+
+            if (loadingScreen) {
+                loadingScreen.classList.add('hidden');
+            }
+
+            if (user) {
+
+    // REFRESCAR DATOS FIREBASE AUTH
+    await user.reload();
+
+    currentUser = auth.currentUser;
+				console.log(user.displayName);
+                document.getElementById('user-display-name').innerText =
+    			currentUser.displayName || currentUser.email.split('@')[0] || 'Usuario';
+
+                hideAuthScreen();
+
+                await fetchEconomicIndices();
+				
+				loadPlazoFijoRates();
+
+                setupDailyEconomicRefresh();
+
+                startRealtimeSync();
+				
+				updateMonthOptions();
+
+				applyFilters();
+				
+				updateResponsiveLayouts();
+
+                showToast('Sincronización iniciada', 'success');
+            } else {
+                showAuthScreen();
+            }
+        });
+
+    } catch (error) {
+        console.error(error);
+        showToast('Error inicializando Firebase', 'error');
+    }
+};
+
+        // Sincronizar datos en tiempo real (REGLA 1 - Strict path, REGLA 2 - No complex query)
+        function startRealtimeSync() {
+
+    if (!currentUser || !db) return;
+
+    const transactionsRef = window.FirebaseLib.collection(
+        db,
+        'users',
+        currentUser.uid,
+        'transactions'
+    );
+
+    if (unsubscribeRealtime) {
+        unsubscribeRealtime();
+    }
+
+    unsubscribeRealtime = window.FirebaseLib.onSnapshot(
+        transactionsRef,
+        (snapshot) => {
+
+            state.transacciones = [];
+
+            snapshot.forEach((doc) => {
+
+                state.transacciones.push({
+                    id: doc.id,
+                    ...doc.data()
+                });
+
+            });
+
+            state.transacciones.sort(
+                (a, b) => new Date(b.date) - new Date(a.date)
+            );
+
+            applyFilters();
+            updateFinancialDashboard();
+
+        },
+        (error) => {
+            console.error(error);
+
+            showToast(
+                'Fallo al sincronizar con la base de datos',
+                'error'
+            );
+        }
+    );
+}
+
+
+function generatePeriodFilter() {
+
+    const select = document.getElementById('filter-period');
+
+    if (!select) return;
+
+    const currentValue = select.value;
+
+    select.innerHTML = '';
+
+    const currentDate = new Date();
+
+    const currentYear = currentDate.getFullYear();
+
+    const currentMonth = currentDate.getMonth();
+
+    const yearsSet = new Set();
+
+    state.transacciones.forEach(tx => {
+
+        if (!tx.date) return;
+
+        const date = new Date(tx.date);
+
+        yearsSet.add(date.getFullYear());
+    });
+
+    yearsSet.add(currentYear);
+
+    const years = [...yearsSet].sort((a, b) => b - a);
+
+    years.forEach(year => {
+
+        const group = document.createElement('optgroup');
+
+        group.label = year;
+
+        const limitMonth =
+            year === currentYear
+                ? currentMonth
+                : 11;
+
+        for (let month = 0; month <= limitMonth; month++) {
+
+            const option = document.createElement('option');
+
+            const monthValue =
+                String(month + 1).padStart(2, '0');
+
+            option.value = `${year}-${monthValue}`;
+
+            option.textContent =
+                `${monthNames[month]} ${year}`;
+
+            group.appendChild(option);
+        }
+
+        select.appendChild(group);
+    });
+
+    // Mantener selección anterior
+    if (currentValue) {
+
+        select.value = currentValue;
+
+    } else {
+
+        // Seleccionar mes actual por defecto
+        const defaultMonth =
+            String(currentMonth + 1).padStart(2, '0');
+
+        select.value =
+            `${currentYear}-${defaultMonth}`;
+    }
+}
+
+function setupDailyEconomicRefresh() {
+
+    const DAY_MS = 86400000;
+
+    const lastUpdate = localStorage.getItem('kf_last_update');
+
+    const now = Date.now();
+
+    if (!lastUpdate || now - parseInt(lastUpdate) > DAY_MS) {
+
+        fetchEconomicIndices().then(() => {
+            localStorage.setItem('kf_last_update', String(Date.now()));
+        });
+    }
+
+    setInterval(async () => {
+
+        await fetchEconomicIndices();
+
+        localStorage.setItem('kf_last_update', String(Date.now()));
+
+    }, DAY_MS);
+}
+
+        // Cargar índices económicos reales de Banco Nación y de ArgentinaDatos para la inflación mensual
+        async function fetchEconomicIndices() {
+    try {
+        // --- 1. Dólar Oficial ---
+        const dolarResponse = await fetch('https://dolarapi.com/v1/dolares/oficial');
+        const dolarData = await dolarResponse.json();
+
+        state.usdIndices.compra = dolarData.compra;
+        state.usdIndices.venta = dolarData.venta;
+
+        document.getElementById('usd-compra').innerText = `$${dolarData.compra}`;
+        document.getElementById('usd-venta').innerText = `$${dolarData.venta}`;
+        document.getElementById('usd-compra-mob').innerText = `$${dolarData.compra}`;
+        document.getElementById('usd-venta-mob').innerText = `$${dolarData.venta}`;
+
+        // Lógica para usd-fecha
+        const fechaDolar = new Date(dolarData.fechaActualizacion);
+        const hoy = new Date();
+        const esHoy = fechaDolar.toDateString() === hoy.toDateString();
+        document.getElementById('usd-fecha').innerText = esHoy 
+            ? "Act: Hoy" 
+            : `Act: ${fechaDolar.toLocaleDateString('es-AR')}`;
+
+        // --- 2. Inflación ---
+        const inflacionResponse = await fetch('https://api.argentinadatos.com/v1/finanzas/indices/inflacion');
+        const inflacionData = await inflacionResponse.json();
+
+        // Inflación acumulada (desde 2026)
+        const inflacion2026 = inflacionData.filter(item => item.fecha.startsWith('2026'));
+        const factorAcumulado = inflacion2026.reduce((acc, item) => acc * (1 + (item.valor / 100)), 1);
+        const porcentajeAcumulado = (factorAcumulado - 1) * 100;
+
+        // Último índice para la fecha
+        const ultimo = inflacionData[inflacionData.length - 1];
+        const fechaUltimo = new Date(ultimo.fecha + 'T00:00:00');
+        const mesNombre = fechaUltimo.toLocaleString('es-ES', { month: 'long' });
+        const mesCapitalizado = mesNombre.charAt(0).toUpperCase() + mesNombre.slice(1);
+
+        state.inflacionIndec.mensual = parseFloat(ultimo.valor);
+
+        // Actualización DOM
+        document.getElementById('inflacion-valor').innerText = `${ultimo.valor}%`;
+        document.getElementById('inflacion-valor-mob').innerText = `${ultimo.valor}%`;
+        document.getElementById('loss-inflation-percentage').innerText = `${porcentajeAcumulado.toFixed(2)}%`;
+        document.getElementById('inflacion-fecha').innerText = `Act: ${mesCapitalizado} ${fechaUltimo.getFullYear()}`;
+
+        showToast('Datos económicos actualizados', 'success');
+
+    } catch (error) {
+        console.error(error);
+        showToast('No se pudieron actualizar los índices', 'error');
+    }
+}
+
+        function ultimoDatoSaneado(valor) {
+            return isNaN(valor) ? 2.6 : valor;
+        }
+
+		let allBanks = [];
+
+let selectedBanks = [];
+
+async function loadPlazoFijoRates() {
+
+    try {
+
+        const response =
+            await fetch(
+                'https://api.argentinadatos.com/v1/finanzas/tasas/plazoFijo'
+            );
+
+        const data =
+            await response.json();
+
+        allBanks = data;
+
+        if (selectedBanks.length === 0) {
+
+            const galicia =
+                data.find(x =>
+                    x.entidad.includes('GALICIA')
+                );
+
+            const icbc =
+                data.find(x =>
+                    x.entidad.includes(
+                        'INDUSTRIAL AND COMMERCIAL BANK OF CHINA'
+                    )
+                );
+
+            const macro =
+                data.find(x =>
+                    x.entidad.includes('MACRO')
+                );
+
+            if (galicia)
+                selectedBanks.push(
+                    galicia.entidad
+                );
+
+            if (icbc)
+                selectedBanks.push(
+                    icbc.entidad
+                );
+
+            if (macro)
+                selectedBanks.push(
+                    macro.entidad
+                );
+
+        }
+
+        fillBankSelector();
+
+        renderSelectedBanks();
+
+    } catch(error) {
+
+        console.error(
+            'Error cargando tasas:',
+            error
+        );
+
+    }
+
+}
+
+		function openBankModal() {
+
+    const list =
+        document.getElementById(
+            'bank-list'
+        );
+
+    if (!list) return;
+
+    list.innerHTML = '';
+
+    allBanks.forEach(bank => {
+
+        const checked =
+            selectedBanks.includes(
+                bank.entidad
+            );
+
+        list.innerHTML += `
+            <label class="flex items-center gap-2 text-xs text-slate-300 py-1">
+
+                <input
+                    type="checkbox"
+                    value="${bank.entidad}"
+                    ${checked ? 'checked' : ''}>
+
+                ${bank.entidad}
+
+            </label>
+        `;
+
+    });
+
+    document
+        .getElementById(
+            'bank-modal'
+        )
+        .classList
+        .remove('hidden');
+
+}
+
+function closeBankModal() {
+
+    document
+        .getElementById(
+            'bank-modal'
+        )
+        .classList
+        .add('hidden');
+
+}
+
+function saveBankSelection() {
+
+    const checked =
+        Array.from(
+            document.querySelectorAll(
+                '#bank-list input:checked'
+            )
+        );
+
+    if (checked.length > 3) {
+
+        alert(
+            'Máximo 3 entidades.'
+        );
+
+        return;
+
+    }
+
+    selectedBanks =
+        checked.map(
+            c => c.value
+        );
+
+    renderSelectedBanks();
+
+    closeBankModal();
+
+}
+		
+function fillBankSelector() {
+
+    const select =
+        document.getElementById(
+            'bank-select'
+        );
+
+    if (!select) return;
+
+    select.innerHTML =
+        '<option value="">Seleccionar entidad...</option>';
+
+    allBanks.forEach(bank => {
+
+        const option =
+            document.createElement(
+                'option'
+            );
+
+        option.value =
+            bank.entidad;
+
+        option.textContent =
+            bank.entidad;
+
+        select.appendChild(
+            option
+        );
+
+    });
+
+}
+
+function toggleBankSelector() {
+
+    const selector =
+        document.getElementById(
+            'bank-selector'
+        );
+
+    if (!selector) return;
+
+    selector.classList.toggle(
+        'hidden'
+    );
+
+}
+
+function addSelectedBank() {
+
+    const select =
+        document.getElementById(
+            'bank-select'
+        );
+	
+    if (!select) return;
+
+    const bank =
+        select.value;
+
+    if (!bank) return;
+
+    if (
+        selectedBanks.includes(bank)
+    ) {
+
+        alert(
+            'Esa entidad ya fue agregada.'
+        );
+
+        return;
+
+    }
+
+    if (
+        selectedBanks.length >= 3
+    ) {
+
+        alert(
+            'Máximo 3 entidades.'
+        );
+
+        return;
+
+    }
+
+    selectedBanks.push(
+        bank
+    );
+
+    renderSelectedBanks();
+
+}
+
+function removeBank(bankName) {
+
+    selectedBanks =
+        selectedBanks.filter(
+            b => b !== bankName
+        );
+
+    renderSelectedBanks();
+
+}
+
+function renderSelectedBanks() {
+
+    const container =
+        document.getElementById(
+            'selected-banks'
+        );
+
+    const mobile =
+        document.getElementById(
+            'pf-rates-mobile'
+        );
+
+    if (container)
+        container.innerHTML = '';
+
+    if (mobile)
+        mobile.innerHTML = '';
+
+    selectedBanks.forEach(
+        bankName => {
+
+            const bank =
+                allBanks.find(
+                    b =>
+                    b.entidad ===
+                    bankName
+                );
+
+            if (!bank) return;
+
+            const tasa =
+                (
+                    bank.tnaClientes *
+                    100
+                ).toFixed(2);
+
+            const nombre =
+                bank.entidad
+                    .replace(
+                        'BANCO ',
+                        ''
+                    )
+                    .replace(
+                        'S.A.',
+                        ''
+                    )
+                    .trim();
+
+            if (container) {
+
+    container.innerHTML += `
+        <div class="flex justify-between items-center bg-slate-800/40 border border-slate-800 rounded-xl p-3">
+
+            <span class="text-xs text-slate-300">
+                ${nombre}
+            </span>
+
+            <span class="text-xs font-bold text-emerald-400">
+                ${tasa}%
+            </span>
+
+        </div>
+    `;
+}
+
+            if (mobile) {
+
+                mobile.innerHTML += `
+                    <span class="text-slate-300">
+
+                        ${nombre.split(' ')[0]}
+
+                        <span class="font-bold text-emerald-400">
+
+                            ${tasa}%
+
+                        </span>
+
+                    </span>
+                `;
+
+            }
+
+        });
+
+}
+
+document.addEventListener(
+    'change',
+    e => {
+
+        if (
+            e.target.id ===
+            'bank-select'
+        ) {
+
+            addSelectedBank();
+
+        }
+
+    }
+);
+		
+        // Actualización manual vía IA (Google Grounding)
+        async function refreshDataWithAI() {
+            const btnDesk = document.getElementById('btn-refresh-ai');
+            const originalHTMLDesk = btnDesk ? btnDesk.innerHTML : '';
+            if (btnDesk) {
+                btnDesk.disabled = true;
+                btnDesk.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> <span>Buscando datos reales...</span>`;
+            }
+
+            const loadingToast = showToast('Consultando Gemini con Google Grounding para escanear índices...', 'loading');
+
+            try {
+                const systemPrompt = "Devuelve de forma exclusiva un objeto JSON sin formatear markdown. Busca el valor actual del dólar BNA compra y venta, y el valor del último mes de la inflación en Argentina según el INDEC.";
+                const userQuery = "Cotización dólar Banco Nación e Inflación mensual INDEC.";
+
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: userQuery }] }],
+                        tools: [{ "google_search": {} }],
+                        systemInstruction: { parts: [{ text: systemPrompt }] },
+                        generationConfig: {
+                            responseMimeType: "application/json",
+                            responseSchema: {
+                                type: "OBJECT",
+                                properties: {
+                                    dollarBuy: { type: "NUMBER" },
+                                    dollarSell: { type: "NUMBER" },
+                                    inflationMonthly: { type: "NUMBER" },
+                                    sourceDate: { type: "STRING" }
+                                },
+                                required: ["dollarBuy", "dollarSell", "inflationMonthly", "sourceDate"]
+                            }
+                        }
+                    })
+                });
+
+                const result = await response.json();
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (text) {
+                    const parsed = JSON.parse(text);
+                    state.usdIndices.compra = parsed.dollarBuy;
+                    state.usdIndices.venta = parsed.dollarSell;
+                    state.usdIndices.fecha = parsed.sourceDate;
+                    state.inflacionIndec.mensual = parsed.inflationMonthly;
+                    state.inflacionIndec.fecha = `Por IA (${parsed.sourceDate})`;
+
+                    loadingToast.remove();
+                    showToast('Variables económicas actualizadas.', 'success');
+                    updateFinancialDashboard();
+                } else {
+                    throw new Error("Respuesta no estructurada.");
+                }
+            } catch (err) {
+                console.error(err);
+                loadingToast.remove();
+                showToast("Fallo al escanear índices en vivo. Se conservarán los actuales.", "error");
+            } finally {
+                if (btnDesk) { btnDesk.disabled = false; btnDesk.innerHTML = originalHTMLDesk; }
+            }
+        }
+
+        // ==========================================
+        //  LÓGICA DEL NEGOCIO Y ESCRITURAS CLOUD
+        // ==========================================
+
+        // Envío Manual de Movimiento
+        async function handleManualSubmit(event) {
+
+    event.preventDefault();
+
+    try {
+
+        const amountInput =
+    document.getElementById(
+        'form-amount'
+    ).value.trim();
+
+let amount;
+
+try {
+
+    amount =
+        Function(
+            '"use strict"; return (' +
+            amountInput +
+            ')'
+        )();
+
+    amount =
+        Number(amount);
+
+} catch {
+
+    alert(
+        'Operación inválida'
+    );
+
+    return;
+
+}
+
+        const transaction = {
+            type: state.tipoFormulario,
+            amount: amount,
+            currency: document.getElementById('form-currency').value,
+            category: document.getElementById('form-category').value,
+            description: document.getElementById('form-description').value,
+            date: document.getElementById('form-date').value,
+            createdAt: new Date().toISOString()
+        };
+
+        const transactionsRef = window.FirebaseLib.collection(
+            db,
+            'users',
+            currentUser.uid,
+            'transactions'
+        );
+
+        await window.FirebaseLib.addDoc(
+            transactionsRef,
+            transaction
+        );
+
+        showToast('Movimiento guardado', 'success');
+
+        document.getElementById('transaction-form').reset();
+		updateCurrentDate();
+
+    } catch (error) {
+
+        console.error(error);
+
+        showToast(
+            'Error guardando movimiento',
+            'error'
+        );
+    }
+}
+
+async function clearCloudHistory() {
+
+    const confirmar = confirm(
+        '¿Realmente querés borrar todas las transacciones? Esta acción no se puede deshacer.'
+    );
+
+    if (!confirmar) return;
+
+    try {
+
+        if (!currentUser || !db) return;
+
+        const transactionsRef =
+            window.FirebaseLib.collection(
+                db,
+                'users',
+                currentUser.uid,
+                'transactions'
+            );
+
+        const snapshot =
+            await window.FirebaseLib.getDocs(
+                transactionsRef
+            );
+
+        const deletions = [];
+
+        snapshot.forEach((docItem) => {
+
+            deletions.push(
+                window.FirebaseLib.deleteDoc(
+                    docItem.ref
+                )
+            );
+        });
+
+        await Promise.all(deletions);
+
+        state.transacciones = [];
+
+        applyFilters();
+
+        updateFinancialDashboard();
+
+        showToast(
+            'Historial eliminado correctamente',
+            'success'
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+        showToast(
+            'Fallo al borrar base de datos remota',
+            'error'
+        );
+    }
+}
+        // Borrar Transacción en la nube
+       async function deleteTransaction(transactionId) {
+
+    if (!currentUser) {
+        showToast('Usuario no autenticado', 'error');
+        return;
+    }
+
+    const confirmDelete = confirm(
+        '¿Querés borrar esta transacción?'
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+
+        const docRef = window.FirebaseLib.doc(
+            db,
+            'users',
+            currentUser.uid,
+            'transactions',
+            transactionId
+        );
+
+        await window.FirebaseLib.deleteDoc(docRef);
+
+        showToast(
+            'Transacción eliminada',
+            'success'
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+        showToast(
+            'Error eliminando transacción',
+            'error'
+        );
+    }
+}
+
+        // Limpiar todas las transacciones de Firestore
+        async function clearAllTransactions() {
+            if (!currentUser || !db) return;
+            if (!confirm('¿Estás seguro de que deseas vaciar tu base de datos? Se eliminarán de forma definitiva todos los registros en la nube.')) return;
+
+            try {
+                const collectionRef = window.FirebaseLib.collection(db, 'artifacts', appId, 'users', currentUser.uid, 'transactions');
+                const querySnapshot = await window.FirebaseLib.getDocs(collectionRef);
+                
+                const deletePromises = [];
+                querySnapshot.forEach((docSnap) => {
+                    deletePromises.push(window.FirebaseLib.deleteDoc(docSnap.ref));
+                });
+
+                await Promise.all(deletePromises);
+                showToast('Historial unificado vaciado.', 'success');
+            } catch (err) {
+                console.error("Fallo al borrar colección:", err);
+                showToast("Fallo al borrar base de datos remota.", "error");
+            }
+        }
+
+        // Interpretador por voz inteligente con Gemini (Soporta Pesos o Dólares indistintamente)
+        async function processVoiceWithGemini() {
+            const transcript = document.getElementById('voice-transcript').value.trim();
+            if (!transcript) {
+                showToast('Por favor escribe o dicta algo primero.', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('btn-process-voice');
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> <span>La IA está procesando...</span>`;
+
+            try {
+                const prompt = `Analiza e interpreta la frase financiera: "${transcript}". Extrae y devuelve en JSON de forma limpia (sin código markdown):
+{
+  "type": "gasto" o "ingreso",
+  "amount": número,
+  "currency": "ARS" o "USD",
+  "category": "Comida", "Alquiler", "Servicios", "Transporte", "Educación", "Salario", "Regalo", "Inversión" o "Otros",
+  "description": string descriptivo limpio de lo que se compró o ingresó
+}`;
+
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key==${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: {
+                            responseMimeType: "application/json",
+                            responseSchema: {
+                                type: "OBJECT",
+                                properties: {
+                                    type: { type: "STRING", enum: ["gasto", "ingreso"] },
+                                    amount: { type: "NUMBER" },
+                                    currency: { type: "STRING", enum: ["ARS", "USD"] },
+                                    category: { type: "STRING", enum: ["Comida", "Alquiler", "Servicios", "Transporte", "Educación", "Salario", "Regalo", "Inversión", "Otros"] },
+                                    description: { type: "STRING" }
+                                },
+                                required: ["type", "amount", "currency", "category", "description"]
+                            }
+                        }
+                    })
+                });
+
+                const result = await response.json();
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (text) {
+                    const parsed = JSON.parse(text);
+                    state.transaccionTemporalIA = {
+                        ...parsed,
+                        date: new Date().toISOString().split('T')[0]
+                    };
+
+                    // Desplegar Modal de Confirmación
+                    document.getElementById('confirm-type').innerText = parsed.type === 'gasto' ? 'Gasto / Egreso' : 'Ingreso / Crédito';
+                    document.getElementById('confirm-amount').innerText = parsed.amount.toLocaleString('es-AR', { minimumFractionDigits: 2 });
+                    document.getElementById('confirm-currency-text').innerText = parsed.currency;
+                    document.getElementById('confirm-category').innerText = parsed.category;
+                    document.getElementById('confirm-desc').innerText = parsed.description;
+                    document.getElementById('confirm-date').innerText = state.transaccionTemporalIA.date;
+
+                    closeVoiceModal();
+                    openConfirmModal();
+                } else {
+                    throw new Error("No se pudo interpretar.");
+                }
+            } catch (err) {
+                console.error(err);
+                showToast("Fallo al interpretar con IA. Intenta dictar más claro.", "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
+        }
+
+        function openConfirmModal() {
+            document.getElementById('confirm-modal').className = "fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-[60] p-4";
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirm-modal').className = "fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center z-[60] p-4";
+            state.transaccionTemporalIA = null;
+        }
+
+        // Confirmar transacción parseada y salvarla en la base de datos
+        async function saveConfirmedTransaction() {
+            if (!currentUser || !state.transaccionTemporalIA || !db) return;
+
+            try {
+                const docRef = window.FirebaseLib.collection(db, 'artifacts', appId, 'users', currentUser.uid, 'transactions');
+                await window.FirebaseLib.addDoc(docRef, {
+                    ...state.transaccionTemporalIA,
+                    createdAt: new Date().toISOString()
+                });
+                showToast("Movimiento por voz guardado en la nube", "success");
+                closeConfirmModal();
+            } catch (err) {
+                console.error(err);
+                showToast("Fallo al guardar transacción.", "error");
+            }
+        }
+
+        // Autenticación de Email y Contraseña (Firebase Auth)
+        async function handleLogin(event) {
+    event.preventDefault();
+
+    try {
+        const email = document.getElementById('login-email').value;
+		const remember =
+        document.getElementById('login-remember').checked;
+
+    if (remember) {
+        localStorage.setItem(
+            'kf_remembered_email',
+            email
+        );
+    } else {
+        localStorage.removeItem(
+            'kf_remembered_email'
+        );
+    }
+        const password = document.getElementById('login-password').value;
+
+        await window.FirebaseLib.signInWithEmailAndPassword(
+            auth,
+            email,
+            password
+        );
+
+        showToast('Sesión iniciada', 'success');
+
+    } catch (error) {
+        console.error(error);
+        showToast(error.message, 'error');
+    }
+}
+
+        async function handleRegister(event) {
+    event.preventDefault();
+
+    try {
+        const name = document.getElementById('register-name').value;
+        const email = document.getElementById('register-email').value;
+        const password = document.getElementById('register-password').value;
+
+        const userCredential = await window.FirebaseLib.createUserWithEmailAndPassword(
+            auth,
+            email,
+            password
+        );
+
+        await window.FirebaseLib.updateProfile(
+    userCredential.user,
+    {
+        displayName: name
+    }
+);
+await userCredential.user.reload();
+        showToast('Cuenta creada correctamente', 'success');
+
+    } catch (error) {
+        console.error(error);
+        showToast(error.message, 'error');
+    }
+}
+
+        async function handleLogout() {
+
+    try {
+
+        await window.FirebaseLib.signOut(auth);
+
+        document.getElementById('login-email').value = '';
+        document.getElementById('login-password').value = '';
+
+        showToast('Sesión cerrada correctamente');
+
+    } catch (err) {
+
+        console.error(err);
+
+    }
+}
+window.handleResetPassword = async function(event) {
+
+    event.preventDefault();
+
+    const email = document
+        .getElementById('reset-email')
+        .value
+        .trim();
+
+    if (!email) {
+        showToast(
+            'Ingresá un correo electrónico',
+            'error'
+        );
+        return;
+    }
+
+    try {
+
+        await window.FirebaseLib.sendPasswordResetEmail(
+            auth,
+            email
+        );
+
+        showToast(
+            'Correo de recuperación enviado',
+            'success'
+        );
+
+        switchAuthView('login');
+
+    } catch (error) {
+
+        console.error(
+            'Error recuperación:',
+            error
+        );
+
+        showToast(
+            error.message,
+            'error'
+        );
+    }
+};
+
+        // ==========================================
+        //  REVISIONES DE RENDERIZACIÓN Y GRÁFICOS
+        // ==========================================
+
+        function updateFinancialDashboard() {
+            const trans = state.transacciones;
+
+            let incArs = 0, expArs = 0;
+            let incUsd = 0, expUsd = 0;
+
+            trans.forEach(t => {
+                if (t.currency === 'ARS') {
+                    if (t.type === 'ingreso') incArs += t.amount;
+                    else expArs += t.amount;
+                } else {
+                    if (t.type === 'ingreso') incUsd += t.amount;
+                    else expUsd += t.amount;
+                }
+            });
+
+            const netArs = incArs - expArs;
+            const netUsd = incUsd - expUsd;
+
+            // Equivalente total de reserva (Neto ARS cambiado a dólar venta + Neto USD)
+            const totalReserva = (netArs / state.usdIndices.venta) + netUsd;
+
+            // Renderizado en Pantalla
+            document.getElementById('metric-income').innerText = `$ ${incArs.toLocaleString('es-AR', { maximumFractionDigits: 0 })}`;
+            document.getElementById('metric-expenses').innerText = `$ ${expArs.toLocaleString('es-AR', { maximumFractionDigits: 0 })}`;
+            
+            const balArsEl = document.getElementById('metric-balance');
+            balArsEl.innerText = `$ ${netArs.toLocaleString('es-AR', { maximumFractionDigits: 0 })}`;
+            balArsEl.className = `text-2xl font-bold mt-1 ${netArs >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+
+            document.getElementById('metric-income-usd').innerText = `u$s ${incUsd.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('metric-expenses-usd').innerText = `u$s ${expUsd.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            
+            const balUsdEl = document.getElementById('metric-balance-usd');
+            balUsdEl.innerText = `u$s ${netUsd.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            balUsdEl.className = `text-2xl font-bold mt-1 ${netUsd >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+
+            document.getElementById('metric-usd-power').innerText = `u$s ${totalReserva.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+            // Tasa ahorro
+            const totalIngresosUnificadosUsd = incUsd + (incArs / state.usdIndices.venta);
+            const tasaAhorro = totalIngresosUnificadosUsd > 0 ? (totalReserva / totalIngresosUnificadosUsd) * 100 : 0;
+            document.getElementById('stats-savings-rate').innerText = `${tasaAhorro.toFixed(0)}%`;
+
+            const badge = document.getElementById('inflation-beaten-badge');
+            if (tasaAhorro > state.inflacionIndec.mensual) {
+                badge.innerText = "Ahorro superó inflación";
+                badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-500/15 text-emerald-400";
+            } else {
+                badge.innerText = "Por debajo de inflación";
+                badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded text-[11px] font-bold bg-rose-500/15 text-rose-400";
+            }
+
+            // Actualizar Interfaces Auxiliares
+            applyFilters();
+            calculateRealPurchasingPower();
+            updateCharts();
+			document.getElementById('lista-anios').textContent =
+`${new Date().getFullYear()} vs ${new Date().getFullYear() - 1}`;
+        }
+
+		// Llena los años desde 2026 hasta el actual y selecciona el de hoy
+// Llena el selector de periodos combinando años y meses dinámicos
+function applyFilters() {
+    // 1. Validamos si el selector tiene opciones cargadas; si solo tiene la fija, armamos los meses
+    const periodSelect = document.getElementById('filter-period');
+    if (periodSelect && periodSelect.options.length <= 1) {
+        generatePeriodFilter();
+    }
+
+    renderTransactions();
+   
+    const typeFilter = document.getElementById('filter-type').value;
+    const periodFilter = periodSelect ? periodSelect.value : '2026-all'; 
+    const tbody = document.getElementById('transaction-table-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    let filtered = [...state.transacciones];
+
+    // 2. FILTRO DE TIPO: Ingresos o Gastos
+    if (typeFilter !== 'all') {
+        filtered = filtered.filter(t => t.type === typeFilter);
+    }
+
+    // 3. FILTRO DE TIEMPO (Año y Mes unificados)
+    if (periodFilter) {
+        const [targetYear, targetMonth] = periodFilter.split('-');
+
+        filtered = filtered.filter(t => {
+            if (!t || !t.date) return false;
+            
+            if (!t.date.startsWith(targetYear)) return false;
+
+            if (targetMonth !== 'all') {
+                const parts = t.date.split('-');
+                if (parts.length < 2) return false;
+                const transMonth = parseInt(parts[1], 10) - 1;
+                return transMonth === parseInt(targetMonth, 10);
+            }
+
+            return true;
+        });
+    }
+
+    document.getElementById('transaction-count').innerText = `Mostrando ${filtered.length} transacciones`;
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-500 italic">No hay transacciones registradas</td></tr>`;
+        return;
+    }
+
+    filtered.sort((a, b) => new Date(b.date + 'T00:00:00') - new Date(a.date + 'T00:00:00'));
+
+    filtered.forEach(t => {
+        const formattedDate = t.date ? t.date.split('-').reverse().join('/') : 'S/F';
+        const badgeColor = t.type === 'gasto' ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400';
+        const signo = t.type === 'gasto' ? '-' : '+';
+        const color = t.type === 'gasto' ? 'text-rose-400' : 'text-emerald-400';
+
+        let equiv = "";
+        if (t.currency === 'ARS') {
+            equiv = `u$s ${(t.amount / state.usdIndices.venta).toFixed(2)}`;
+        } else {
+            equiv = `$ ${(t.amount * state.usdIndices.compra).toLocaleString('es-AR', { maximumFractionDigits: 0 })}`;
+        }
+
+        const tr = document.createElement('tr');
+        tr.className = "border-b border-slate-800/50 hover:bg-slate-850/30 transition duration-150";
+        tr.innerHTML = `
+            <td class="py-3 px-2 text-slate-400 whitespace-nowrap">${formattedDate}</td>
+            <td class="py-3 px-2">
+                <div class="font-semibold text-slate-200">${t.description || 'Sin descripción'}</div>
+                <span class="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-bold ${badgeColor}">
+                    ${t.category}
+                </span>
+            </td>
+            <td class="py-3 px-2 text-right font-black ${color}">
+                ${signo} ${t.currency === 'ARS' ? '$' : 'u$s'} ${t.amount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+            </td>
+            <td class="py-3 px-2 text-right text-slate-400 font-semibold italic">
+                ${signo} ${equiv}
+            </td>
+            <td class="py-3 px-2 text-center">
+                <button onclick="deleteTransaction('${t.id}')" class="text-slate-500 hover:text-rose-400 p-1.5 rounded-lg hover:bg-rose-500/10 transition">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// Genera las opciones del selector de tiempo: Año actual con meses limitados + años anteriores completos
+function updateMonthOptions() {
+    const periodSelect = document.getElementById('filter-period');
+    if (!periodSelect) return;
+
+    const f = new Date();
+    const currentYear = f.getFullYear();
+    const currentMonth = f.getMonth(); // 0 = Enero, 11 = Diciembre
+
+    const nombresMeses = [
+        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+
+    // Guardamos lo que estaba seleccionado para que no se borre al actualizar
+    const previousSelection = periodSelect.value; 
+
+    periodSelect.innerHTML = '';
+
+    // Iteramos desde el año actual bajando hasta el año base 2026
+    for (let y = currentYear; y >= 2026; y--) {
+        // Opción principal del año (Ej: "Todo 2026")
+        const optYear = document.createElement('option');
+        optYear.value = `${y}-all`;
+        optYear.innerText = y; // Se muestra solo el año como título/solapa principal
+        optYear.style.fontWeight = 'bold';
+        periodSelect.appendChild(optYear);
+
+        // Si es el año actual limita los meses hasta hoy, si es un año viejo muestra los 12 meses
+        const maxMes = (y === currentYear) ? currentMonth : 11;
+
+        for (let m = 0; m <= maxMes; m++) {
+            const optMonth = document.createElement('option');
+            optMonth.value = `${y}-${m}`;
+            optMonth.innerText = `  ${nombresMeses[m]}`; // Un pequeño espacio para escalonarlo visualmente
+            periodSelect.appendChild(optMonth);
+        }
+    }
+
+    // Al cargar por primera vez, seleccionamos el MES ACTUAL del AÑO ACTUAL de forma obligatoria
+    if (!previousSelection) {
+        periodSelect.value = `${currentYear}-${currentMonth}`;
+    } else {
+        periodSelect.value = previousSelection;
+    }
+}
+		
+        // Filtros y Renderización de Tabla Histórica
+        function applyFilters() {
+    const typeFilter = document.getElementById('filter-type').value;
+    const periodFilter = document.getElementById('filter-period').value; // Formato recibido: "YYYY-MM" o "YYYY-all"
+    const tbody = document.getElementById('transaction-table-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    let filtered = [...state.transacciones];
+
+    // 1. FILTRO DE TIPO: Ingresos o Gastos
+    if (typeFilter !== 'all') {
+        filtered = filtered.filter(t => t.type === typeFilter);
+    }
+
+    // 2. FILTRO DE TIEMPO (Año y Mes unificados)
+    if (periodFilter) {
+        const [targetYear, targetMonth] = periodFilter.split('-'); // Separamos el año y el mes de la opción elegida
+
+        filtered = filtered.filter(t => {
+            if (!t || !t.date) return false;
+            
+            // Verificamos que corresponda al año seleccionado
+            if (!t.date.startsWith(targetYear)) return false;
+
+            // Si se eligió un mes específico, filtramos que coincida
+            if (targetMonth !== 'all') {
+                const parts = t.date.split('-'); // t.date es "YYYY-MM-DD"
+                if (parts.length < 2) return false;
+                const transMonth = parseInt(parts[1], 10) - 1; // Convertimos mes a formato indexado (0-11)
+                return transMonth === parseInt(targetMonth, 10);
+            }
+
+            return true;
+        });
+    }
+
+    document.getElementById('transaction-count').innerText = `Mostrando ${filtered.length} transacciones`;
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-500 italic">No hay transacciones registradas</td></tr>`;
+        return;
+    }
+
+    // Ordenamos siempre de más reciente a más antigua
+    filtered.sort((a, b) => new Date(b.date + 'T00:00:00') - new Date(a.date + 'T00:00:00'));
+
+    filtered.forEach(t => {
+        const formattedDate = t.date ? t.date.split('-').reverse().join('/') : 'S/F';
+        const badgeColor = t.type === 'gasto' ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400';
+        const signo = t.type === 'gasto' ? '-' : '+';
+        const color = t.type === 'gasto' ? 'text-rose-400' : 'text-emerald-400';
+
+        let equiv = "";
+        if (t.currency === 'ARS') {
+            equiv = `u$s ${(t.amount / state.usdIndices.venta).toFixed(2)}`;
+        } else {
+            equiv = `$ ${(t.amount * state.usdIndices.compra).toLocaleString('es-AR', { maximumFractionDigits: 0 })}`;
+        }
+
+        const tr = document.createElement('tr');
+        tr.className = "border-b border-slate-800/50 hover:bg-slate-850/30 transition duration-150";
+        tr.innerHTML = `
+            <td class="py-3 px-2 text-slate-400 whitespace-nowrap">${formattedDate}</td>
+            <td class="py-3 px-2">
+                <div class="font-semibold text-slate-200">${t.description || 'Sin descripción'}</div>
+                <span class="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-bold ${badgeColor}">
+                    ${t.category}
+                </span>
+            </td>
+            <td class="py-3 px-2 text-right font-black ${color}">
+                ${signo} ${t.currency === 'ARS' ? '$' : 'u$s'} ${t.amount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+            </td>
+            <td class="py-3 px-2 text-right text-slate-400 font-semibold italic">
+                ${signo} ${equiv}
+            </td>
+            <td class="py-3 px-2 text-center">
+                <button onclick="deleteTransaction('${t.id}')" class="text-slate-500 hover:text-rose-400 p-1.5 rounded-lg hover:bg-rose-500/10 transition">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+		// ========================================
+// OBTENER PROMEDIO DÓLAR ENERO
+// ========================================
+
+async function actualizarDolarBaseEnero() {
+
+    try {
+
+        const response =
+            await fetch('https://api.argentinadatos.com/v1/cotizaciones/dolares/oficial');
+
+        const data =
+            await response.json();
+
+        // Año actual
+        const currentYear =
+            new Date().getFullYear();
+
+        // Filtrar ENERO del año actual
+        const dolarEnero =
+            data.filter(item =>
+                item.fecha.startsWith(`${currentYear}-01`)
+            );
+
+        // Si no hay datos
+        if (dolarEnero.length === 0) {
+
+            console.error('No hay datos de enero');
+
+            return;
+        }
+
+        // Promedio dólar venta enero
+        const promedioEnero =
+            dolarEnero.reduce((acc, item) => {
+
+                return acc + item.venta;
+
+            }, 0) / dolarEnero.length;
+
+        // Guardar en state
+        state.dolarBaseEnero =
+            promedioEnero;
+
+        console.log(
+            'Dólar promedio enero:',
+            promedioEnero
+        );
+
+    } catch (error) {
+
+        console.error(
+            'Error obteniendo dólar enero:',
+            error
+        );
+    }
+}
+		
+        // ========================================
+// CALCULADORA PODER ADQUISITIVO REAL
+// ========================================
+
+function calculateRealPurchasingPower() {
+
+    const baseS =
+        parseFloat(document.getElementById('base-salary').value) || 0;
+
+    const currentS =
+        parseFloat(document.getElementById('current-salary').value) || 0;
+
+    if (baseS === 0) return;
+
+    // ========================================
+// DÓLAR
+// ========================================
+
+// USD sueldo base usando dólar promedio enero
+const initialUsd =
+    baseS / state.dolarBaseEnero;
+
+// USD sueldo actual usando dólar actual
+const currentUsd =
+    currentS / state.usdIndices.venta;
+
+// Mostrar sueldo actual en USD
+document.getElementById('salary-in-usd').innerText =
+    `u$s ${currentUsd.toLocaleString('es-AR', {
+        maximumFractionDigits: 0
+    })}`;
+
+// Variación %
+const usdDiff =
+    ((currentUsd - initialUsd) / initialUsd) * 100;
+
+const compUsdEl =
+    document.getElementById('salary-in-usd-comparison');
+
+if (usdDiff >= 0) {
+
+    compUsdEl.innerText =
+        `+${usdDiff.toFixed(1)}% vs enero en dólares`;
+
+    compUsdEl.className =
+        "text-xs text-emerald-400 mt-0.5";
+
+} else {
+
+    compUsdEl.innerText =
+        `${usdDiff.toFixed(1)}% vs enero en dólares`;
+
+    compUsdEl.className =
+        "text-xs text-rose-400 mt-0.5";
+}
+
+    // ========================================
+    // INFLACIÓN ACUMULADA
+    // ========================================
+
+    const inflationPct =
+        (state.inflacionAcumulada || 0) / 100;
+
+    // Sueldo necesario hoy para empatar inflación
+    const adjustedSalary =
+        baseS * (1 + inflationPct);
+
+    // Índice de poder real
+    const powerIndex =
+        (currentS / adjustedSalary) * 100;
+
+    // Diferencia vs inflación
+    const diff =
+        ((currentS - adjustedSalary) / adjustedSalary) * 100;
+
+    // ========================================
+    // ELEMENTOS HTML
+    // ========================================
+
+    const realPurchasingIndex =
+    document.getElementById('real-purchasing-index');
+
+realPurchasingIndex.innerText =
+    `${powerIndex.toFixed(0)}%`;
+
+// COLOR SEGÚN RESULTADO
+if (powerIndex < 100) {
+
+    realPurchasingIndex.className =
+        "text-rose-400";
+
+} else if (powerIndex === 100) {
+
+    realPurchasingIndex.className =
+        "text-white";
+
+} else {
+
+    realPurchasingIndex.className =
+        "text-emerald-400";
+}
+
+    const salaryAdjustedText =
+        document.getElementById('salary-adjusted-inflation');
+
+    const salaryAdjustedComparison =
+        document.getElementById('salary-adjusted-comparison');
+
+    const card =
+        document.getElementById('salary-adjusted-card');
+
+    const iconContainer =
+        document.getElementById('salary-adjusted-icon-container');
+
+    const icon =
+        document.getElementById('salary-adjusted-icon');
+
+    // Mostrar sueldo actualizado por inflación
+    const realSalary =
+    currentS / (1 + inflationPct);
+
+salaryAdjustedText.innerText =
+    `$ ${realSalary.toLocaleString('es-AR', {
+        maximumFractionDigits: 0
+    })}`;
+
+    // ========================================
+    // GANÓ O PERDIÓ
+    // ========================================
+
+    if (diff >= 0) {
+
+        salaryAdjustedComparison.innerText =
+            `Ganó +${diff.toFixed(1)}% contra la inflación`;
+
+        salaryAdjustedComparison.className =
+            "text-xs text-emerald-400 mt-0.5";
+
+        card.className =
+            "bg-emerald-950/20 border border-emerald-500/10 p-4 rounded-xl flex items-start space-x-3 text-emerald-200";
+
+        iconContainer.className =
+            "p-2.5 rounded-lg border bg-emerald-500/10 border-emerald-500/20 text-emerald-400 flex-shrink-0";
+
+        icon.className =
+            "fa-solid fa-arrow-trend-up text-lg";
+
+    } else {
+
+        salaryAdjustedComparison.innerText =
+            `Perdió ${Math.abs(diff).toFixed(1)}% de poder de compra`;
+
+        salaryAdjustedComparison.className =
+            "text-xs text-rose-400 mt-0.5";
+
+        card.className =
+            "bg-rose-950/20 border border-rose-500/10 p-4 rounded-xl flex items-start space-x-3 text-rose-200";
+
+        iconContainer.className =
+            "p-2.5 rounded-lg border bg-rose-500/10 border-rose-500/20 text-rose-400 flex-shrink-0";
+
+        icon.className =
+            "fa-solid fa-arrow-trend-down text-lg";
+    }
+}
+
+// ========================================
+// ACTUALIZAR INFLACIÓN ACUMULADA
+// ========================================
+
+async function actualizarInflacionAcumulada() {
+
+    try {
+
+        // API inflación
+        const response =
+            await fetch('https://api.argentinadatos.com/v1/finanzas/indices/inflacion');
+
+        const data =
+            await response.json();
+
+        // Filtrar solo 2026
+        const inflacion2026 =
+            data.filter(item =>
+                item.fecha.startsWith('2026')
+            );
+
+        // Calcular inflación acumulada
+        const factorAcumulado =
+            inflacion2026.reduce((acc, item) => {
+
+                return acc * (1 + (item.valor / 100));
+
+            }, 1);
+
+        const porcentajeAcumulado =
+            (factorAcumulado - 1) * 100;
+
+        // ========================================
+        // GUARDAR EN STATE
+        // ========================================
+
+        state.inflacionAcumulada =
+            porcentajeAcumulado;
+
+        // ========================================
+        // FECHA ÚLTIMO DATO
+        // ========================================
+
+        const ultimoDato =
+            data[data.length - 1];
+
+        const fecha =
+            new Date(ultimoDato.fecha + 'T00:00:00');
+
+        const nombreMes =
+            fecha.toLocaleString('es-ES', {
+                month: 'long'
+            });
+
+        const mesCapitalizado =
+            nombreMes.charAt(0).toUpperCase() +
+            nombreMes.slice(1);
+
+        const año =
+            fecha.getFullYear();
+
+        // ========================================
+        // ACTUALIZAR HTML
+        // ========================================
+
+        const elementoPorcentaje =
+            document.getElementById('loss-inflation-percentage');
+
+        const elementoFecha =
+            document.getElementById('inflacion-fecha');
+
+        if (elementoPorcentaje) {
+
+            elementoPorcentaje.textContent =
+                `${porcentajeAcumulado.toFixed(2)}%`;
+        }
+
+        if (elementoFecha) {
+
+            elementoFecha.textContent =
+                `Act: ${mesCapitalizado} ${año}`;
+        }
+
+        // ========================================
+        // RECALCULAR
+        // ========================================
+
+        calculateRealPurchasingPower();
+
+    } catch (error) {
+
+        console.error(
+            'Error al obtener la inflación:',
+            error
+        );
+    }
+}
+
+// ========================================
+// EJECUTAR
+// ========================================
+
+async function inicializarDatos() {
+
+    await actualizarInflacionAcumulada();
+
+    await actualizarDolarBaseEnero();
+
+    calculateRealPurchasingPower();
+}
+
+inicializarDatos();
+		
+        // ========================================
+// DIAGNÓSTICO IA EN VIVO
+// ========================================
+
+async function generateAIDiagnosis() {
+
+    if (!GEMINI_API_KEY) return;
+
+    const container =
+        document.getElementById('salary-ai-diagnosis');
+
+    container.innerText =
+        "Analizando variables económicas...";
+
+    try {
+
+        // ========================================
+        // DATOS
+        // ========================================
+
+        const baseS =
+            parseFloat(document.getElementById('base-salary').value) || 0;
+
+        const currS =
+            parseFloat(document.getElementById('current-salary').value) || 0;
+
+        const inflation =
+            state.inflacionAcumulada || 0;
+
+        const dolarActual =
+            state.usdIndices.venta || 0;
+
+        const currentUsd =
+            currS / dolarActual;
+
+        // Poder adquisitivo real
+        const adjustedSalary =
+            baseS * (1 + (inflation / 100));
+
+        const powerIndex =
+            (currS / adjustedSalary) * 100;
+
+        const powerLoss =
+            100 - powerIndex;
+		
+		const salaryToMatchInflation =
+    baseS * (1 + inflation / 100);
+
+const gap =
+    currS - salaryToMatchInflation;
+
+        // ========================================
+        // PROMPT
+        // ========================================
+
+        const prompt = `
+Analiza estas variables económicas de Argentina:
+
+- Sueldo inicial: ARS ${baseS}
+- Sueldo actual: ARS ${currS}
+- Inflación acumulada: ${inflation.toFixed(2)}%
+- Poder adquisitivo conservado: ${powerIndex.toFixed(1)}%
+- Pérdida real contra inflación: ${powerLoss.toFixed(1)}%
+- Salario actual en USD oficial: USD ${currentUsd.toFixed(0)}
+- Dólar oficial actual: ARS ${dolarActual}
+- Salario actual: ARS ${currS.toFixed(0)}
+- Salario requerido para mantener el poder adquisitivo inicial: ARS ${salaryToMatchInflation.toFixed(0)}
+- Diferencia: ARS ${gap.toFixed(0)}
+
+Genera un diagnóstico financiero breve de máximo 3 líneas.
+
+Condiciones:
+- Sé claro y directo.
+- Explica si ganó o perdió poder adquisitivo.
+- Explica brevemente la evolución en USD.
+- Podés mencionar instrumentos indexados argentinos como CER, dólar MEP, money market o plazo fijo.
+- NO inventes salarios de mercado.
+- NO des asesoramiento financiero absoluto.
+- Evitá exageraciones.
+- Indicá explícitamente cuánto debería estar ganando hoy para empatar la inflación.
+- Compará ese valor con el salario actual.
+- Si el salario actual es mayor, explicá en qué porcentaje supera la inflación.
+- Si es menor, explicá cuánto falta para alcanzarla.
+`;
+
+        // ========================================
+        // REQUEST GEMINI
+        // ========================================
+
+        const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+            {
+                method: 'POST',
+
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{
+                            text: prompt
+                        }]
+                    }]
+                })
+            }
+        );
+
+        // ========================================
+        // ERROR API
+        // ========================================
+
+        if (!response.ok) {
+
+            throw new Error(
+                `Gemini Error ${response.status}`
+            );
+        }
+
+		console.log(
+    await response.clone().text()
+);
+		
+        const data =
+            await response.json();
+
+        const diagnosis =
+            data.candidates?.[0]?.content?.parts?.[0]?.text ||
+            "No se pudo generar el diagnóstico.";
+
+        container.innerText =
+            diagnosis.replace(/\*/g, '');
+
+    } catch (err) {
+
+    console.error(err);
+
+    container.innerText =
+        err.message;
+}
+}
+
+        // RENDER DE GRÁFICOS CON CHART.JS
+        function updateCharts() {
+            const chartCurrency = state.chartCurrencyView;
+            
+            const monthlyData = Array(12).fill(0).map(() => ({ ingresos: 0, gastos: 0 }));
+            const catMap = {};
+
+            state.transacciones.forEach(tx => {
+                const date = new Date(tx.date);
+                const month = date.getMonth();
+                
+                let val = tx.amount;
+                if (chartCurrency === 'total_usd') {
+                    if (tx.currency === 'ARS') val = tx.amount / state.usdIndices.venta;
+                } else if (chartCurrency === 'ars') {
+                    if (tx.currency === 'USD') val = tx.amount * state.usdIndices.compra;
+                } else if (chartCurrency === 'usd') {
+                    if (tx.currency === 'ARS') val = 0;
+                }
+
+                if (tx.type === 'ingreso') {
+                    monthlyData[month].ingresos += val;
+                } else {
+                    monthlyData[month].gastos += val;
+                    if (val > 0) {
+                        catMap[tx.category] = (catMap[tx.category] || 0) + val;
+                    }
+                }
+            });
+
+            // 1. Gráfico de Barras Comparativas
+            // ==============================
+// MESES HASTA EL ACTUAL
+// ==============================
+
+// 1. Gráfico de Barras Comparativas
+// ==============================
+
+let labels = [];
+let datasetIngresos = [];
+let datasetGastos = [];
+let datasetAhorro = [];
+
+// ==============================
+// VISTA ANUAL
+// ==============================
+
+if (state.graficoTipo === 'yearly') {
+
+    const anioActual =
+        new Date().getFullYear();
+
+    const anioAnterior =
+        anioActual - 1;
+
+    let ingresosActual = 0;
+    let gastosActual = 0;
+
+    let ingresosAnterior = 0;
+    let gastosAnterior = 0;
+
+    state.transacciones.forEach(tx => {
+
+        const fecha =
+            new Date(tx.date);
+
+        const anio =
+            fecha.getFullYear();
+
+        let valor = tx.amount;
+
+        if (chartCurrency === 'total_usd') {
+
+            if (tx.currency === 'ARS') {
+                valor =
+                    tx.amount /
+                    state.usdIndices.venta;
+            }
+
+        } else if (chartCurrency === 'ars') {
+
+            if (tx.currency === 'USD') {
+                valor =
+                    tx.amount *
+                    state.usdIndices.compra;
+            }
+
+        } else if (chartCurrency === 'usd') {
+
+            if (tx.currency === 'ARS') {
+                valor = 0;
+            }
+
+        }
+
+        if (anio === anioActual) {
+
+            if (tx.type === 'ingreso') {
+                ingresosActual += valor;
+            } else {
+                gastosActual += valor;
+            }
+
+        }
+
+        if (anio === anioAnterior) {
+
+            if (tx.type === 'ingreso') {
+                ingresosAnterior += valor;
+            } else {
+                gastosAnterior += valor;
+            }
+
+        }
+
+    });
+
+    labels = [
+        String(anioAnterior),
+        String(anioActual)
+    ];
+
+    datasetIngresos = [
+        ingresosAnterior,
+        ingresosActual
+    ];
+
+    datasetGastos = [
+        gastosAnterior,
+        gastosActual
+    ];
+
+    datasetAhorro = [
+        ingresosAnterior - gastosAnterior,
+        ingresosActual - gastosActual
+    ];
+
+    const listaAnios =
+        document.getElementById(
+            'lista-anios'
+        );
+
+    if (listaAnios) {
+        listaAnios.textContent =
+            `${anioAnterior} vs ${anioActual}`;
+    }
+
+}
+
+// ==============================
+// VISTA MENSUAL
+// ==============================
+
+else {
+
+    const allLabels = [
+        'Ene',
+        'Feb',
+        'Mar',
+        'Abr',
+        'May',
+        'Jun',
+        'Jul',
+        'Ago',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dic'
+    ];
+
+    const currentMonth =
+        new Date().getMonth();
+
+    labels =
+        allLabels.slice(
+            0,
+            currentMonth + 1
+        );
+
+    datasetIngresos =
+        monthlyData
+            .slice(
+                0,
+                currentMonth + 1
+            )
+            .map(
+                m => m.ingresos
+            );
+
+    datasetGastos =
+        monthlyData
+            .slice(
+                0,
+                currentMonth + 1
+            )
+            .map(
+                m => m.gastos
+            );
+
+    datasetAhorro =
+        monthlyData
+            .slice(
+                0,
+                currentMonth + 1
+            )
+            .map(
+                m =>
+                    m.ingresos -
+                    m.gastos
+            );
+}
+
+            if (state.comparacionChart) {
+                state.comparacionChart.destroy();
+            }
+
+            const ctx1 = document.getElementById('comparison-chart').getContext('2d');
+            state.comparacionChart = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [
+
+    // INGRESOS
+    {
+        label: 'Ingresos',
+        data: datasetIngresos,
+        backgroundColor: '#10b981',
+        borderRadius: 4
+    },
+
+    // GASTOS
+    {
+        label: 'Gastos',
+        data: datasetGastos,
+        backgroundColor: '#f43f5e',
+        borderRadius: 4
+    },
+
+    // AHORRO
+    {
+        label: 'Ahorro',
+        data: datasetAhorro,
+        backgroundColor: datasetAhorro.map(v => v >= 0
+        ? '#3b82f6'
+        : '#eab308'
+),
+        borderRadius: 4,
+		type: 'line',
+        borderColor: '#3b82f6',
+        fill: false
+    }
+
+]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#94a3b8' } } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
+                        y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }
+                    }
+                }
+            });
+	
+	// ==============================
+// MES DE MAYOR AHORRO
+// ==============================
+
+const maxAhorro =
+    Math.max(...datasetAhorro);
+
+const indiceMejorMes =
+    datasetAhorro.indexOf(maxAhorro);
+
+const mejorMes =
+    labels[indiceMejorMes];
+
+// Actualizar card
+document.getElementById('stats-best-month').innerText =
+    mejorMes;
+
+            // 2. Gráfico Circular de Distribución
+            const catLabels = Object.keys(catMap);
+            const catValues = Object.values(catMap);
+            const legendContainer = document.getElementById('category-list-legend');
+            legendContainer.innerHTML = '';
+
+            if (state.categoriaChart) {
+                state.categoriaChart.destroy();
+            }
+
+            if (catLabels.length === 0) {
+                legendContainer.innerHTML = `<p class="text-xs text-center text-slate-500 py-4">No hay datos suficientes para graficar.</p>`;
+                return;
+            }
+
+            const ctx2 = document.getElementById('category-chart').getContext('2d');
+            const colors = ['#f59e0b', '#3b82f6', '#10b981', '#ec4899', '#8b5cf6', '#ef4444', '#14b8a6', '#6366f1', '#64748b'];
+
+            state.categoriaChart = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: catLabels,
+                    datasets: [{
+                        data: catValues,
+                        backgroundColor: colors.slice(0, catLabels.length),
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            const totalSpend = catValues.reduce((a, b) => a + b, 0);
+            catLabels.forEach((label, idx) => {
+                const val = catValues[idx];
+                const pct = ((val / totalSpend) * 100).toFixed(0);
+                const color = colors[idx % colors.length];
+
+                legendContainer.innerHTML += `
+                    <div class="flex items-center justify-between text-xs text-slate-300">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${color}"></span>
+                            <span class="font-medium">${label}</span>
+                        </div>
+                        <span class="text-slate-400">${pct}% (${chartCurrency === 'ars' ? '$' : 'u$s'} ${Math.round(val)})</span>
+                    </div>
+                `;
+            });
+        }
+
+        // Speech Recognition Setup
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) return;
+
+            state.reconocimientoVoz = new SpeechRecognition();
+            state.reconocimientoVoz.continuous = false;
+            state.reconocimientoVoz.lang = 'es-AR';
+
+            state.reconocimientoVoz.onstart = () => {
+                state.grabando = true;
+                document.getElementById('mic-pulse').classList.remove('hidden');
+                document.getElementById('mic-icon').className = "fa-solid fa-microphone text-rose-500 text-3xl";
+                document.getElementById('mic-status').innerText = "Escuchando...";
+            };
+
+            state.reconocimientoVoz.onresult = (event) => {
+                document.getElementById('voice-transcript').value = event.results[0][0].transcript;
+            };
+
+            state.reconocimientoVoz.onend = () => {
+                state.grabando = false;
+                document.getElementById('mic-pulse').classList.add('hidden');
+                document.getElementById('mic-icon').className = "fa-solid fa-microphone text-3xl text-slate-300";
+                document.getElementById('mic-status').innerText = "Listo";
+            };
+        }
+
+        function toggleSpeechRecording() {
+            if (!state.reconocimientoVoz) {
+                showToast("Tu navegador no soporta el reconocimiento de voz nativo.", "error");
+                return;
+            }
+            if (state.grabando) {
+                state.reconocimientoVoz.stop();
+            } else {
+                state.reconocimientoVoz.start();
+            }
+        }
+
+        // Control de Responsive Layout de Pestañas e Interfaces
+        function updateResponsiveLayouts() {
+            const isMobile = window.innerWidth < 768;
+            
+            if (!isMobile) {
+                // En PC / Desktop, mostrar de forma simultánea todos los contenedores en cascada
+                document.getElementById('section-container-operaciones').className = "space-y-6 block";
+                document.getElementById('section-container-estadisticas').className = "space-y-6 block";
+                document.getElementById('section-container-simulador').className = "space-y-6 block";
+                
+                // Forzar recalculado de gráficos en paralelo
+                setTimeout(() => {
+                    updateCharts();
+                    calculateRealPurchasingPower();
+                }, 50);
+            } else {
+                // En Móvil / Celular, restaurar la navegación por solapas
+                setActiveMobileTab(state.currentMobileTab);
+            }
+        }
+
+        // Eliminar selectores de pestañas antiguas obsoletas de PC (Fuerza render simultáneo global)
+        function setActiveTab(tab) {
+            // No operacional en PC, todo se renderiza a la vez. Mantenido por compatibilidad
+            updateResponsiveLayouts();
+        }
+
+        function setActiveMobileTab(tab) {
+            state.currentMobileTab = tab;
+            document.getElementById('section-container-operaciones').className = tab === 'operaciones' ? 'space-y-6 block' : 'hidden';
+            document.getElementById('section-container-estadisticas').className = tab === 'estadisticas' ? 'space-y-6 block' : 'hidden';
+            document.getElementById('section-container-simulador').className = tab === 'simulador' ? 'space-y-6 block' : 'hidden';
+
+            ['operaciones', 'estadisticas', 'simulador'].forEach(t => {
+                const navBtn = document.getElementById(`tab-nav-${t}`);
+                if (navBtn) {
+                    if (t === tab) {
+                        navBtn.className = "py-1.5 flex flex-col items-center justify-center text-emerald-400 transition-all duration-150";
+                    } else {
+                        navBtn.className = "py-1.5 flex flex-col items-center justify-center text-slate-400 hover:text-slate-200 transition-all duration-150";
+                    }
+                }
+            });
+
+            if (tab === 'estadisticas') setTimeout(updateCharts, 50);
+            if (tab === 'simulador') calculateRealPurchasingPower();
+        }
+
+		function toggleChartType(type) {
+            state.graficoTipo = type;
+            const btnMonthly = document.getElementById('tab-monthly');
+            const btnYearly = document.getElementById('tab-yearly');
+
+            if (type === 'monthly') {
+                if (btnMonthly) btnMonthly.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600/20 text-emerald-400 border border-emerald-500/30";
+                if (btnYearly) btnYearly.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-750";
+            } else {
+                if (btnYearly) btnYearly.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600/20 text-emerald-400 border border-emerald-500/30";
+                if (btnMonthly) btnMonthly.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-750";
+            }
+
+            updateCharts();
+        }
+		
+        function setFormType(type) {
+            state.tipoFormulario = type;
+            const btnGasto = document.getElementById('btn-form-gasto');
+            const btnIngreso = document.getElementById('btn-form-ingreso');
+            if (type === 'gasto') {
+                btnGasto.className = "py-2.5 px-4 rounded-xl text-xs font-bold transition border border-rose-500/30 bg-rose-500/10 text-rose-400";
+                btnIngreso.className = "py-2.5 px-4 rounded-xl text-xs font-bold transition border border-slate-800 bg-slate-800 text-slate-400";
+            } else {
+                btnGasto.className = "py-2.5 px-4 rounded-xl text-xs font-bold transition border border-slate-800 bg-slate-800 text-slate-400";
+                btnIngreso.className = "py-2.5 px-4 rounded-xl text-xs font-bold transition border border-emerald-500/30 bg-emerald-500/10 text-emerald-400";
+            }
+        }
+
+        function switchAuthView(view) {
+            document.getElementById('view-login').classList.add('hidden');
+            document.getElementById('view-register').classList.add('hidden');
+            document.getElementById('view-reset').classList.add('hidden');
+
+            if (view === 'login') document.getElementById('view-login').classList.remove('hidden');
+            if (view === 'register') document.getElementById('view-register').classList.remove('hidden');
+            if (view === 'reset') document.getElementById('view-reset').classList.remove('hidden');
+        }
+
+        function showAuthScreen() {
+
+    document.getElementById('auth-screen').classList.remove('hidden');
+
+    document.querySelector('header')?.classList.add('hidden');
+    document.querySelector('main')?.classList.add('hidden');
+
+    const mobileNav = document.querySelector('.md\\:hidden.fixed.bottom-0');
+    if (mobileNav) mobileNav.classList.add('hidden');
+}
+
+        function hideAuthScreen() {
+
+    document.getElementById('auth-screen').classList.add('hidden');
+
+    document.querySelector('header')?.classList.remove('hidden');
+    document.querySelector('main')?.classList.remove('hidden');
+
+    const mobileNav = document.querySelector('.md\\:hidden.fixed.bottom-0');
+    if (mobileNav) mobileNav.classList.remove('hidden');
+}
+
+        function changeChartCurrencyView(val) {
+            state.chartCurrencyView = val;
+            updateCharts();
+        }
+
+        function openVoiceModal() {
+            document.getElementById('voice-modal').className = "fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4";
+        }
+
+        function closeVoiceModal() {
+            document.getElementById('voice-modal').className = "fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4";
+        }
+
+        function setSampleText(text) {
+            document.getElementById('voice-transcript').value = text;
+        }
+
+        function updateCurrentDate() {
+
+    const dias = [
+        'Domingo',
+        'Lunes',
+        'Martes',
+        'Miércoles',
+        'Jueves',
+        'Viernes',
+        'Sábado'
+    ];
+
+    const meses = [
+        'Enero',
+        'Febrero',
+        'Marzo',
+        'Abril',
+        'Mayo',
+        'Junio',
+        'Julio',
+        'Agosto',
+        'Septiembre',
+        'Octubre',
+        'Noviembre',
+        'Diciembre'
+    ];
+
+    const fechaLocal = new Date();
+
+    document.getElementById('fecha').innerText =
+        `${dias[fechaLocal.getDay()]} ${fechaLocal.getDate()} de ${meses[fechaLocal.getMonth()]} de ${fechaLocal.getFullYear()}`;
+
+    // FORMATO LOCAL REAL
+    const anio = fechaLocal.getFullYear();
+
+    const mes = String(
+        fechaLocal.getMonth() + 1
+    ).padStart(2, '0');
+
+    const dia = String(
+        fechaLocal.getDate()
+    ).padStart(2, '0');
+
+    const hoyFormateado =
+        `${anio}-${mes}-${dia}`;
+
+    const inputFecha =
+        document.getElementById('form-date');
+
+    if (inputFecha) {
+
+        inputFecha.value = hoyFormateado;
+
+        inputFecha.max = hoyFormateado;
+    }
+}
+
+       window.onload = async function() {
+    initSpeechRecognition();
+    updateCurrentDate();
+    
+    // Ejecuta el armado del selector de tiempo unificado
+    initDynamicFilters(); 
+    
+    await fetchEconomicIndices();
+    
+    window.addEventListener('resize', updateResponsiveLayouts);
+}
+		document.addEventListener('DOMContentLoaded', () => {
+			const savedEmail =
+        localStorage.getItem(
+            'kf_remembered_email'
+        );
+
+    if (savedEmail) {
+
+        document.getElementById('login-email').value =
+            savedEmail;
+
+        document.getElementById('login-remember').checked =
+            true;
+    }
+			updateCurrentDate();
+            // Detecta si estás abriendo el archivo localmente en la otra compu (protocolo file:///)
+            if (window.location.protocol === 'file:') {
+                console.log("Modo prueba offline detectado - Salteando pantallas de acceso");
+                
+                // 1. Ocultamos la pantalla de carga y el formulario de login de Firebase
+                document.getElementById('loading-screen').classList.add('hidden');
+                document.getElementById('auth-screen').classList.add('hidden');
+                
+                // 2. Le ponemos un nombre de prueba a la barra de navegación para que no diga "Sincronizando..."
+                const userDisplay = document.getElementById('user-display-name');
+                if (userDisplay) userDisplay.innerText = "Modo Prueba Offline";
+                
+                // 3. Forzamos a que las tablas y secciones principales sean visibles
+                const mainSection = document.getElementById('section-container-operaciones');
+                if (mainSection) {
+                    mainSection.classList.remove('hidden');
+                    mainSection.classList.add('block');
+                }
+            }
+const rememberedEmail =
+    localStorage.getItem('kf_remembered_email');
+
+if (rememberedEmail) {
+
+    document.getElementById('login-email').value =
+        rememberedEmail;
+
+    document.getElementById('login-remember').checked =
+        true;
+}
+        });
+		// ===============================
+// MENU USUARIO
+// ===============================
+
+document.addEventListener('click', (e) => {
+
+    const button =
+        document.getElementById('user-menu-button');
+
+    const menu =
+        document.getElementById('user-menu');
+
+    if (!button || !menu) return;
+
+    // Toggle menu
+    if (button.contains(e.target)) {
+
+        menu.classList.toggle('hidden');
+
+    } else {
+
+        menu.classList.add('hidden');
+    }
+});
+		async function deleteAccount() {
+
+    const confirmDelete = confirm(
+        '¿Estás seguro de eliminar tu cuenta?\n\nEsta acción borrará permanentemente:\n\n• Todas las transacciones\n• Datos financieros\n• Email\n• Usuario\n• Cuenta completa\n\nEsta acción no se puede deshacer.'
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+
+        if (!currentUser || !db) return;
+
+        // =========================
+        // BORRAR TRANSACCIONES
+        // =========================
+
+        const transactionsRef =
+            window.FirebaseLib.collection(
+                db,
+                'users',
+                currentUser.uid,
+                'transactions'
+            );
+
+        const snapshot =
+            await window.FirebaseLib.getDocs(
+                transactionsRef
+            );
+
+        const deletions = [];
+
+        snapshot.forEach((docItem) => {
+
+            deletions.push(
+                window.FirebaseLib.deleteDoc(
+                    docItem.ref
+                )
+            );
+        });
+
+        await Promise.all(deletions);
+
+        // =========================
+        // BORRAR DOCUMENTO USER
+        // =========================
+
+        try {
+
+            const userDocRef =
+                window.FirebaseLib.doc(
+                    db,
+                    'users',
+                    currentUser.uid
+                );
+
+            await window.FirebaseLib.deleteDoc(
+                userDocRef
+            );
+
+        } catch (e) {
+            console.warn(e);
+        }
+
+        // =========================
+        // BORRAR AUTH
+        // =========================
+
+        await currentUser.delete();
+
+        showToast(
+            'Cuenta eliminada correctamente',
+            'success'
+        );
+
+        // RELOAD
+        setTimeout(() => {
+
+            window.location.reload();
+
+        }, 1500);
+
+    } catch (error) {
+
+        console.error(error);
+
+        // REAUTH REQUIRED
+        if (
+            error.code ===
+            'auth/requires-recent-login'
+        ) {
+
+            showToast(
+                'Por seguridad, cerrá sesión y volvé a ingresar antes de eliminar la cuenta.',
+                'error'
+            );
+
+            return;
+        }
+
+        showToast(
+            'No se pudo eliminar la cuenta',
+            'error'
+        );
+    }
+}
+    </script>
+</body>
+</html>

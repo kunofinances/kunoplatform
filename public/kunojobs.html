@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KunoJobs | Búsqueda Laboral</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fuentes solicitadas: Comfortaa y Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { 
+                        brand: { 500: '#6366f1' },
+                        kuno: { violet: '#8b5cf6' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        logo: ['Comfortaa', 'cursive']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0f172a; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen">
+
+    <!-- Header -->
+    <header class="border-b border-indigo-500/20 bg-slate-900/80 sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <div class="bg-indigo-600 p-2 rounded-lg"><i class="fa-solid fa-briefcase text-white"></i></div>
+                <h1 class="text-xl tracking-tight">
+                    <span class="font-logo text-kuno-violet">kuno</span><span class="font-logo text-white">jobs</span>
+                </h1>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button class="p-2 hover:bg-slate-800 rounded-lg text-slate-400" title="Filtros">
+                    <i class="fa-solid fa-filter"></i>
+                </button>
+                <div class="relative">
+                    <button onclick="document.getElementById('menu').classList.toggle('hidden')" class="flex items-center gap-2 p-2 hover:bg-slate-800 rounded-lg">
+                        <span class="hidden md:block text-sm font-medium">Usuario</span>
+                        <i class="fa-solid fa-ellipsis-vertical md:ml-2"></i>
+                    </button>
+                    <div id="menu" class="hidden absolute right-0 mt-2 w-56 glass border border-slate-700 rounded-xl py-2 shadow-2xl z-50">
+                        <div class="px-4 py-2 text-xs text-slate-400 uppercase font-bold">Cuenta</div>
+                        <a href="#" class="block px-4 py-2 hover:bg-slate-800 text-sm">Cambiar contraseña</a>
+                        <a href="#" class="block px-4 py-2 hover:bg-slate-800 text-sm text-red-400">Eliminar cuenta</a>
+                        <div class="border-t border-slate-700 my-1"></div>
+                        <a href="https://kunofinances.com" class="block px-4 py-2 hover:bg-slate-800 text-sm">Ir a KunoFinances</a>
+                        <a href="https://kunorentals.com" class="block px-4 py-2 hover:bg-slate-800 text-sm">Ir a KunoRentals</a>
+                        <a href="#" class="block px-4 py-2 hover:bg-slate-800 text-sm font-bold text-indigo-400">Cerrar Sesión</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Cuerpo principal -->
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        <div id="job-feed" class="grid grid-cols-1 gap-4">
+            <div class="text-center py-20 text-slate-500">
+                <i class="fa-solid fa-circle-notch animate-spin text-3xl mb-4 text-indigo-500"></i>
+                <p>Buscando nuevas oportunidades...</p>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = { 
+            // RELLENAR AQUÍ CON TUS CREDENCIALES
+            apiKey: "AIzaSyDLlmsBwkbjqvc6tplVSZbxeFZ2x1UPtRU",
+            authDomain: "kunofinances.firebaseapp.com",
+            projectId: "kunofinances",
+            storageBucket: "kunofinances.firebasestorage.app",
+            messagingSenderId: "690699051750",
+            appId: "1:690699051750:web:d2e148b1590117e6181127"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        onSnapshot(query(collection(db, 'jobs'), orderBy('createdAt', 'desc')), (snapshot) => {
+            const feed = document.getElementById('job-feed');
+            feed.innerHTML = '';
+            snapshot.forEach((doc) => {
+                const job = doc.data();
+                const daysAgo = Math.floor((Date.now() - job.createdAt.toMillis()) / (1000 * 60 * 60 * 24));
+                
+                if (daysAgo <= 5) {
+                    const card = document.createElement('div');
+                    card.className = "glass border border-slate-700/50 p-5 rounded-2xl hover:border-indigo-500 transition-all";
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-semibold text-lg text-white">${job.title}</h3>
+                                <p class="text-sm text-slate-400">${job.company}</p>
+                                <div class="mt-3 flex items-center gap-4 text-[11px] uppercase tracking-wider font-bold text-slate-500">
+                                    <span><i class="fa-solid fa-calendar mr-1"></i>Hace ${daysAgo} días</span>
+                                    <span><i class="fa-solid fa-globe mr-1"></i>${job.source || 'Bumeran'}</span>
+                                </div>
+                            </div>
+                            <a href="${job.url}" target="_blank" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-xs font-bold transition-all ml-4">POSTULAR</a>
+                        </div>
+                    `;
+                    feed.appendChild(card);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
