@@ -1,0 +1,38 @@
+name: KunoJobs Scraper
+
+on:
+  schedule:
+    - cron: '0 6,18 * * *'
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: Instalar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar dependencias
+        run: |
+          cd functions
+          npm install
+
+      - name: Instalar Chromium
+        run: |
+          cd functions
+          npx playwright install chromium
+
+      - name: Crear serviceAccountKey.json
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > functions/serviceAccountKey.json
+
+      - name: Ejecutar scraper
+        run: |
+          cd functions
+          node scraper.js
