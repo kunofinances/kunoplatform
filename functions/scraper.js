@@ -11,9 +11,7 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 (async () => {
-    const browser = await chromium.launch({
-        headless: false
-    });
+    const browser = await chromium.launch();
 
     const page = await browser.newPage();
 
