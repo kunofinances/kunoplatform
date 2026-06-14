@@ -10,6 +10,7 @@ if (!admin.apps.length) {
 }
 
 const db = admin.firestore();
+console.log("SCRAPER VERSION 14 JUNIO");
 (async () => {
     const browser = await chromium.launch();
 
