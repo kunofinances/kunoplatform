@@ -30,6 +30,9 @@ console.log("SCRAPER VERSION 14 JUNIO");
       link.querySelectorAll('h3')
     ).map(h => h.innerText.trim());
 
+    console.log("Avisos encontrados:", jobs.length);
+console.log(JSON.stringify(jobs, null, 2));
+
     return {
       title: link.querySelector('h2')?.innerText?.trim() || '',
       published: h3s[0] || '',
